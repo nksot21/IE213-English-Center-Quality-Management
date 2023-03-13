@@ -1,11 +1,10 @@
 # IE213-English-Center-Quality-Management
 
 # .env file
-
-MONGO_USERNAME=
-MONGO_PASSWORD=
-MONGO_DBNAME=
-PORT=3000
+    MONGO_USERNAME=
+    MONGO_PASSWORD=
+    MONGO_DBNAME=
+    PORT=3000
 
 
 # MongoDB
