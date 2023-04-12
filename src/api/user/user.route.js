@@ -1,9 +1,9 @@
-import express from 'express'
-import UserValidateSchema from './user.validate.js'
-import UserController from './user.controller.js'
-import validate from '../middlewares/validate.middleware.js'
-const router = express.Router()
+// import express from 'express'
+// import UserController from './user.controller'
+// import validate from '../middlewares/validate.middleware.js'
+// const router = express.Router()
 
-router.route('/').post(validate(UserValidateSchema), UserController.apiPostUser )
-// 
-export default router
+// router.route('/').post(UserController.apiPostUser)
+                
+// // 
+// export default router
