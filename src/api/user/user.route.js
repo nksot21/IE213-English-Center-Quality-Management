@@ -1,9 +1,8 @@
-// import express from 'express'
-// import UserController from './user.controller'
-// import validate from '../middlewares/validate.middleware.js'
-// const router = express.Router()
+import express from 'express'
+import UserController from './user.controller.js'
+const router = express.Router()
 
-// router.route('/').post(UserController.apiPostUser)
+router.route("/").get(UserController.getAllUser);
                 
-// // 
-// export default router
+// 
+export default router

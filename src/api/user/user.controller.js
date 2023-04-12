@@ -1,28 +1,20 @@
-// import UserSchema from '../model/user.schema'
+import UserSchema from "../model/user.schema.js";
 
-// import Response from '../helpers/response.js'
+import Response from "../helpers/response.js";
 
-// export default class MoviesController{
-//     static async apiPostUser(req, res, next){
-//         try{
-            
-//             const newUserReq = {
-//                 username: req.body.username,
-//                 password: req.body.password,
-//                 email: req.body.email,
-//                 age: req.body.age
-//             }
+export default class UserController {
+  static async getAllUser(req, res, next) {
+    try {
 
-//             const newUser = await UserSchema.create(newUser);
+      const users = await UserSchema.find();
+        console.log("users", users)
+      if (!users) {
+        throw "error";
+      }
 
-//             if(!newUser){
-//                 throw "error"
-//             }
-
-//             return res.json(Response.successResponse(newUser))
-            
-//         }catch(error){
-//             return res.json(Response.handlingErrorResponse(error))
-//         }
-//     }
-// }
+      return res.json(Response.successResponse(users));
+    } catch (error) {
+      return res.json(Response.handlingErrorResponse(error));
+    }
+  }
+}
