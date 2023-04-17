@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import StudentSchema from "./student.schema.js"
 
 const schema = new mongoose.Schema({
     Date: Date,
@@ -12,20 +13,29 @@ const schema = new mongoose.Schema({
     },
     StudentID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "StudentID",
+        ref: "Student",
     },
+    ClassID: mongoose.Schema.Types.ObjectId
 })
 
 
-schema.virtual('_Student', {
-    ref: 'Student',
-    localField: 'StudentID',
-    foreignField: '_id',
-    justOne: true
+// schema.virtual('_Student', {
+//     ref: 'Student',
+//     localField: 'StudentID',
+//     foreignField: '_id',
+//     justOne: true
+// })
+
+schema.pre('save', async function (next) {
+    const student = await StudentSchema.findById(this.StudentID)
+    this.ClassID = student.ClassID
+    next()
 })
 
-schema.virtual('classID').get(function () {
-    return this._Student.classID
+schema.pre(/^find/, function (next) {
+    this.populate("StudentID")
+    next()
 })
+
 const StudentReportSchema = mongoose.model("StudentReport", schema);
 export default StudentReportSchema
