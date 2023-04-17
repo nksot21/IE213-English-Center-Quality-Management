@@ -15,7 +15,7 @@ const schema = new mongoose.Schema({
         type: Number,
         require: true
     },
-    ScoreTarger: {
+    ScoreTarget: {
         type: Number,
         require: true 
     },

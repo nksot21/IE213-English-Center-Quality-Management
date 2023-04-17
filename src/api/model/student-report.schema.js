@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose"
 
 const schema = new mongoose.Schema({
@@ -13,7 +12,7 @@ const schema = new mongoose.Schema({
     },
     StudentID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:"StudentID",
+        ref: "StudentID",
     },
 })
 
@@ -24,5 +23,9 @@ schema.virtual('_Student', {
     foreignField: '_id',
     justOne: true
 })
+
+schema.virtual('classID').get(function () {
+    return this._Student.classID
+})
 const StudentReportSchema = mongoose.model("StudentReport", schema);
- export default StudentReportSchema
+export default StudentReportSchema
