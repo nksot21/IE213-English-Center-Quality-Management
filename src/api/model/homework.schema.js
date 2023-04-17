@@ -17,6 +17,6 @@ const schema = new mongoose.Schema({
     Discription: String,
     Type: String,
 })
-const TestSchema = mongoose.model("Test", schema);
- export default TestSchema
+const HomeworkSchema = mongoose.model("Homework", schema);
+export default HomeworkSchema
 
