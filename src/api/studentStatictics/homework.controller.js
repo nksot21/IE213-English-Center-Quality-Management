@@ -31,11 +31,11 @@ export const createHomework = async (req, res, next) => {
         return res.json(Response.successResponse(newHomework));
     }
 
-    const updatedAttendace = await StudentHomeworkSchema.findOneAndUpdate(homeworkData, {
+    const updatedHomework = await StudentHomeworkSchema.findOneAndUpdate(homeworkData, {
         Score: score
     })
 
-    return res.json(Response.successResponse(updatedAttendace))
+    return res.json(Response.successResponse(updatedHomework))
 }
 
 export const getHomeworks = async (req, res, next) => {
@@ -53,6 +53,7 @@ export const getHomeworks = async (req, res, next) => {
     return res.json(Response.successResponse(homeworks))
 }
 
+// Delete all homeworks of a date of a class
 export const deleteHomework = async (req, res, next) => {
     // delete all homeworks of a date of a class
     const { classId } = req.params
