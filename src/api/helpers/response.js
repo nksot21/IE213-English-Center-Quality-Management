@@ -1,9 +1,9 @@
 
 const responseTemplate = {
-    successResponse: (result = null) => {
+    successResponse: (Result = null) => {
         return {
             ResponseResult: {
-                ErrorCode: 0, Message: "Success", result
+                ErrorCode: 0, Message: "Success", Result
             }
         }
     },

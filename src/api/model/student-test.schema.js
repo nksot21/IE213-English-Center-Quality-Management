@@ -18,11 +18,11 @@ const schema = new mongoose.Schema({
     ClassID: mongoose.Schema.Types.ObjectId
 })
 
-schema.pre('save', async function (next) {
-    const student = await StudentSchema.findById(this.StudentID)
-    this.ClassID = student.ClassID
-    next()
-})
+// schema.pre('save', async function (next) {
+//     const student = await StudentSchema.findById(this.StudentID)
+//     this.ClassID = student.ClassID
+//     next()
+// })
 
 // Populate test and student before and find method
 schema.pre(/^find/, function (next) {
