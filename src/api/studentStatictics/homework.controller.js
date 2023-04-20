@@ -29,19 +29,21 @@ export const createHomework = async (req, res, next) => {
             }
 
             const existedHomework = await StudentHomeworkSchema.findOne(homeworkData)
-
+            let studentIdTemp = student.id
             if (!existedHomework) {
                 const newHomework = await StudentHomeworkSchema.create({
                     ...homeworkData,
                     Score: score,
                     ClassID: student.ClassID
                 })
+                await studentReportController.createStudentReport({date, homeworkScore: score,  studentId: studentIdTemp})
                 homeworksRes.push(newHomework)
             } else {
                 const updatedHomework = await StudentHomeworkSchema.findOneAndUpdate(homeworkData, {
                     Score: score,
                     ClassID: student.ClassID
                 })
+                await studentReportController.createStudentReport({date, homeworkScore: score,  studentId: studentIdTemp})
                 homeworksRes.push(updatedHomework)
             }
         }))
