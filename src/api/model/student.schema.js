@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import moment from 'moment';
 
 const schema = new mongoose.Schema({
     Name: {
@@ -18,7 +19,7 @@ const schema = new mongoose.Schema({
     },
     Age: {
         type: Number,
-        default: 0,
+        default: 20,
     },
     PhoneNumber: {
         type: String,
@@ -43,5 +44,19 @@ schema.virtual('_Class', {
     justOne: true
 })
 
+schema.pre('save', function(next) {
+    this.Name = `${this.FirstName} ${this.LastName}`;
+  
+     // Kiểm tra tính hợp lệ của dữ liệu ngày tháng
+    const dob = moment(this.DateOfBirthday, 'DD-MM-YYYY');
+    if (!dob.isValid()) {
+        return next(new Error('Invalid date format'));
+    }
+    
+    // Chuyển đổi sang kiểu Date và gán lại giá trị
+    this.DateOfBirthday = dob.toDate();
+    next();
+});
+
 const StudentSchema = mongoose.model("Student", schema);
- export default StudentSchema
+export default StudentSchema
