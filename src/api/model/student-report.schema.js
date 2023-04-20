@@ -8,7 +8,7 @@ const schema = new mongoose.Schema({
     TestScore: Number,
     TotalScore: Number,
     Month: {
-        type: [Number],
+        type: Number,
         index: true
     },
     StudentID: {
