@@ -1,4 +1,5 @@
 import express from 'express'
+import ClassesController from './classes.controller.js'
 import {
     createAttendance,
     deleteAttendance,
@@ -30,5 +31,11 @@ classRoute.route('/:classId/tests')
     .post(createTest)
     .get(getTests)
     .delete(deleteTest)
+
+classRoute.route("/").get(ClassesController.getAllClasses);
+classRoute.route("/").post(ClassesController.createClasses);
+classRoute.get("/:id", ClassesController.getClassesById);
+classRoute.put("/:id", ClassesController.updateClasses);
+classRoute.delete("/:id", ClassesController.deleteClasses);
 
 export default classRoute
