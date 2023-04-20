@@ -2,9 +2,9 @@ import Joi from 'joi'
 
 const postStudentSchema =  {
     body: Joi.object().keys({
-        // name: Joi.string().min(3).max(30).required(),
         Email: Joi.string().required(),
-        PhoneNumber: Joi.string().trim().length(10).pattern(/^\d+$/).required()
+        PhoneNumber: Joi.string().trim().length(10).pattern(/^\d+$/).required(),
+        DateOfBirthday: Joi.date().format('DD-MM-YYYY').required()
     })
 }
 export default postStudentSchema
