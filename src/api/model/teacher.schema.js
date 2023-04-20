@@ -18,9 +18,6 @@ const schema = new mongoose.Schema({
     PhoneNumber: {
         type: String,
     },
-    DateOfBirthday: {
-        type: Date,
-    },
     ImageURL: String,
     Certificate: String,
     Score: Number,
