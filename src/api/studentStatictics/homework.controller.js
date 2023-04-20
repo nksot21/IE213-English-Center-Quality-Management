@@ -5,41 +5,56 @@ import ClassSchema from "../model/class.schema.js";
 import HomeworkSchema from "../model/homework.schema.js";
 
 export const createHomework = async (req, res, next) => {
-    const {
-        score,
-        homeworkId,
-        studentId,
-        date
-    } = req.body
+    const homeworksReq = req.body.homeworks
+    let homeworksRes = []
 
-    const student = await StudentSchema.findOne({
-        StudentID: studentId
-    })
+    await Promise.all(
+        homeworksReq.map(async homework => {
+            const {
+                score,
+                homeworkId,
+                studentId,
+                date
+            } = homework
 
-    const homeworkData = {
-        StudentID: student.id,
-        Date: new Date(date),
-        HomeworkID: homeworkId,
-    }
+            const student = await StudentSchema.findOne({
+                StudentID: studentId
+            })
+            if (!student) res.json(Response.errorResponse(404, `Student with ID ${studentId} is not found`))
 
-    const homework = await StudentHomeworkSchema.findOne(homeworkData)
-    if (!homework) {
-        const newHomework = await StudentHomeworkSchema.create({
-            ...homeworkData,
-            Score: score
-        })
-        return res.json(Response.successResponse(newHomework));
-    }
+            const homeworkData = {
+                StudentID: student.id,
+                Date: new Date(date),
+                HomeworkID: homeworkId,
+            }
 
-    const updatedHomework = await StudentHomeworkSchema.findOneAndUpdate(homeworkData, {
-        Score: score
-    })
-
-    return res.json(Response.successResponse(updatedHomework))
+            const existedHomework = await StudentHomeworkSchema.findOne(homeworkData)
+            let studentIdTemp = student.id
+            if (!existedHomework) {
+                const newHomework = await StudentHomeworkSchema.create({
+                    ...homeworkData,
+                    Score: score,
+                    ClassID: student.ClassID
+                })
+                await studentReportController.createStudentReport({date, homeworkScore: score,  studentId: studentIdTemp})
+                homeworksRes.push(newHomework)
+            } else {
+                const updatedHomework = await StudentHomeworkSchema.findOneAndUpdate(homeworkData, {
+                    Score: score,
+                    ClassID: student.ClassID
+                })
+                await studentReportController.createStudentReport({date, homeworkScore: score,  studentId: studentIdTemp})
+                homeworksRes.push(updatedHomework)
+            }
+        }))
+    
+    return res.json(Response.successResponse(homeworksRes))
 }
 
 export const getHomeworks = async (req, res, next) => {
-    const { classId } = req.params
+    const {
+        classId
+    } = req.params
 
     const _class = await ClassSchema.findOne({
         ClassID: classId
@@ -55,9 +70,12 @@ export const getHomeworks = async (req, res, next) => {
 
 // Delete all homeworks of a date of a class
 export const deleteHomework = async (req, res, next) => {
-    // delete all homeworks of a date of a class
-    const { classId } = req.params
-    const { date } = req.body
+    const {
+        classId
+    } = req.params
+    const {
+        date
+    } = req.body
 
     const _class = await ClassSchema.findOne({
         ClassID: classId

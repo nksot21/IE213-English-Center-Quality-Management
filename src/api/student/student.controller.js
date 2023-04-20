@@ -1,5 +1,4 @@
 import StudentSchema from "../model/student.schema.js";
-
 import Response from "../helpers/response.js";
 
 export default class StudentController{
@@ -8,18 +7,22 @@ export default class StudentController{
 
     static async getAllStudent(req, res, next) {
         try {
-          const students = await StudentSchema.find();
+          let query={};
+          //Filter by typeClass
+          if(req.query.typeClass){
+            query.TypeClass = req.query.typeClass;
+          }
+          const students = await StudentSchema.find(query);
           if (!students) {
             throw "error";
           }
-    
           return res.status(200).json(Response.successResponse(students));
         } 
         catch (error) {
           return res.json(Response.handlingErrorResponse(error));
         }
     }
-
+ 
 
     //---------getAllStudentById--------------
 
@@ -38,6 +41,8 @@ export default class StudentController{
 
 
     //-------------createStudent-------------
+    
+
     static async createStudent(req, res) {
         try { 
             console.debug("Creating...");
