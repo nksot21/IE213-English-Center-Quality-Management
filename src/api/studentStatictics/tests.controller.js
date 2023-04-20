@@ -27,7 +27,7 @@ export const createTest = async (req, res, next) => {
                 Date: new Date(date),
                 TestID: testId,
             }
-
+            let studentIdTemp = student.id
             const existedTest = await StudentTestSchema.findOne(testData)
             if (!existedTest) {
                 const newTest = await StudentTestSchema.create({
@@ -35,13 +35,14 @@ export const createTest = async (req, res, next) => {
                     Score: score,
                     ClassID: student.ClassID
                 })
+                await studentReportController.createStudentReport({date, testScore: score,  studentId: studentIdTemp})
                 testsRes.push(newTest)
             } else {
                 const updatedTest = await StudentTestSchema.findOneAndUpdate(testData, {
                     Score: score,
                     ClassID: student.ClassID
                 })
-
+                await studentReportController.createStudentReport({date, testScore: score,  studentId: studentIdTemp})
                 testsRes.push(updatedTest)
             }
         }))

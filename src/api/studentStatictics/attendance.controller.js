@@ -27,23 +27,27 @@ export const createAttendance = async (req, res, next) => {
                 Date: new Date(date)
             }
 
-            const existedAttendance = await StudentReportSchema.findOne(attendanceData)
-            if (!existedAttendance) {
-                const newAttendance = await StudentReportSchema.create({
-                    ...attendanceData,
-                    Attendance: isAttended,
-                    ClassID: student.ClassID
-                })
-                console.log(student.ClassID)
-                attendancesRes.push(newAttendance)
-            } else {
-                const updatedAttendace = await StudentReportSchema.findOneAndUpdate(attendanceData, {
-                    Attendance: isAttended,
-                    ClassID: student.ClassID
-                })
-                attendancesRes.push(updatedAttendace)
-            }
+            // const existedAttendance = await StudentReportSchema.findOne(attendanceData)
+            // if (!existedAttendance) {
+            //     const newAttendance = await StudentReportSchema.create({
+            //         ...attendanceData,
+            //         Attendance: isAttended,
+            //         ClassID: student.ClassID
+            //     })
+            //     console.log(student.ClassID)
+            //     attendancesRes.push(newAttendance)
+            // } else {
+            //     const updatedAttendace = await StudentReportSchema.findOneAndUpdate(attendanceData, {
+            //         Attendance: isAttended,
+            //         ClassID: student.ClassID
+            //     })
+            //     attendancesRes.push(updatedAttendace)
+            // }
+            let tempId = student.id
+            let report = await studentReportController.createStudentReport({date, attendance: isAttended, studentId: tempId})
+            attendancesRes.push(report)
         }));
+
 
     return res.json(Response.successResponse(attendancesRes))
 }
