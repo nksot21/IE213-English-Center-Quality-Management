@@ -38,3 +38,4 @@ classRoute.get("/:id", ClassesController.getClassesById);
 classRoute.put("/:id", ClassesController.updateClasses);
 classRoute.delete("/:id", ClassesController.deleteClasses);
 
+export default classRoute
