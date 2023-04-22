@@ -6,7 +6,7 @@ export default class ClassesController {
     //-------getAllClasses--------
     static async getAllClasses(req, res, next) {
         try {
-            const classes = await ClassSchema.fin();
+            const classes = await ClassSchema.find();
             if(!classes) {
                 throw "error";
             }
