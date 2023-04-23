@@ -31,6 +31,7 @@ const schema = new mongoose.Schema({
     ScoreIncome: Number,
     ScoreDesire: Number,
     TypeClass: String,
+    NameClass: String,
     ClassID: {
         type: mongoose.Schema.Types.ObjectId,
         ref:"ClassID",
