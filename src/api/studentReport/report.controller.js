@@ -14,17 +14,66 @@ function getTotalScore ({ homeworkScore, testScore} = {}) {
     return totalScore
 }
 
+function getReportResultTotal(reports){
+    let totalScore = 0, totalTestScore = 0, totalHomeworkScore = 0, totalAttended = 0, homeworkRequired = 0, testRequired = 0
+    let totalReport = 0
+    reports.map((report) => {
+        totalReport += report.TotalReport
+        totalScore += report.TotalScore
+        totalTestScore += (report.TestScore == -1) ? 0 : report.TestScore
+        totalHomeworkScore += (report.HomeworkScore == -1) ? 0 : report.HomeworkScore,
+        homeworkRequired += report.HomeworkScoreRequired,
+        testRequired += report.TestScoreRequired,
+        totalAttended += report.Attendance
+    })
+    let sumScore = totalTestScore + totalHomeworkScore, maxScore = homeworkRequired + testRequired
+    let evalStr 
+    let evalScore = sumScore / maxScore
+    if(evalScore >= 0.8){
+        evalStr = "Good"
+    }else if(evalScore < 0.8 && evalScore > 0.5){
+        evalStr = "Medium"
+    }else{
+        evalStr = "Not-Good"
+    }
+    
+    return {
+        TotalReport: totalReport,
+        TotalAttented: totalAttended,
+        TotalTestScore: totalTestScore,
+        TotalHomeworkScore: totalHomeworkScore,
+        TotalScore: totalScore,
+        TotalHomeworkScoreRequired: homeworkRequired,
+        TotalTestScoreRequired: testRequired,
+        AverageTestScore: parseFloat(totalTestScore/totalReport),
+        AverageHomeworkScore: parseFloat(totalHomeworkScore/totalReport),
+        AverageTotalScore: parseFloat(totalScore/totalReport),
+        Evaluation: evalStr
+    }
+}
+
+
 function getReportResultMonthly(reports, totalReport){
     let totalScore = 0, totalTestScore = 0, totalHomeworkScore = 0, totalAttended = 0, homeworkRequired = 0, testRequired = 0
                 
     reports.map((report) => {
         totalScore += report.TotalScore
-        totalTestScore += report.TestScore
-        totalHomeworkScore += report.HomeworkScore,
+        totalTestScore += (report.TestScore == -1) ? 0 : report.TestScore
+        totalHomeworkScore += (report.HomeworkScore == -1) ? 0 : report.HomeworkScore,
         homeworkRequired += report.HomeworkScoreRequired,
         testRequired += report.TestScoreRequired,
         totalAttended = report.Attendance == true ? (totalAttended + 1) : totalAttended
     })
+    let sumScore = totalTestScore + totalHomeworkScore, maxScore = homeworkRequired + testRequired
+    let evalStr 
+    let evalScore = sumScore / maxScore
+    if(evalScore >= 0.8){
+        evalStr = "Good"
+    }else if(evalScore < 0.8 && evalScore > 0.5){
+        evalStr = "Medium"
+    }else{
+        evalStr = "Not-Good"
+    }
 
     return {
         TotalReport: totalReport,
@@ -37,6 +86,7 @@ function getReportResultMonthly(reports, totalReport){
         AverageTestScore: parseFloat(totalTestScore/totalReport),
         AverageHomeworkScore: parseFloat(totalHomeworkScore/totalReport),
         AverageTotalScore: parseFloat(totalScore/totalReport),
+        Evaluation: evalStr
     }
 }
 
@@ -148,7 +198,7 @@ export default class studentReportController{
         }
     }
 
-    static async getStudentTotalReportAPI(req, res, next) {
+    static async getStudentMonthlyReportAPI(req, res, next) {
         try{
             const {
               studentid     
@@ -160,8 +210,7 @@ export default class studentReportController{
             if(!student){
                 throw "Student Not Found"
             }
-            console.log(student.id)
-            let report = await StudentReportSchema.aggregate([
+            let reports = await StudentReportSchema.aggregate([
                 { $match: {StudentID: new mongoose.Types.ObjectId(student.id)}},
                 {
                     $project: {
@@ -202,17 +251,49 @@ export default class studentReportController{
             
             let reportResponse = {
                 Student: student,
-                Report: report,
+                Report: reports,
+                TotalResult: getReportResultTotal(reports)
             }
-            return res.status(200).json(responseTemplate.successResponse(reportResponse));
+            return res.status(200).json(responseTemplate.successResponse(reportResponse))
         
+        }catch(error){
+            return res.json(responseTemplate.handlingErrorResponse(error));
+        }
+    }
+
+    static async getStudentTotalReportAPI(req, res, next) {
+        try{
+            const {
+                studentid     
+            } = req.query
+            if(!studentid){
+                throw "StudentId is required"
+            }
+            let student = await StudentSchema.findOne({StudentID: studentid})
+            .catch(err => {
+                throw err
+            })
+            if(!student){
+                throw "Student Not Found"
+            }
+
+            let reports = await getStudentReports({studentId: student.id})
+            .catch(err => {
+                console.log(err)
+                throw err
+            })
+            let reportResponse = {
+                Student: student,
+                TotalResult: getReportResultMonthly(reports.reportsDb, reports.count)
+            }
+            return res.status(200).json(responseTemplate.successResponse(reportResponse)); 
         }catch(error){
             return res.json(responseTemplate.handlingErrorResponse(error));
         }
     }
        
     // Get Student Report API
-    static async getStudentReportAPI(req, res, next) {
+    static async getStudentDailyReportAPI(req, res, next) {
         try{
             const {
                 studentid,
@@ -221,16 +302,16 @@ export default class studentReportController{
                 date
             } = req.query
             // student
-            let studentDb = await StudentSchema.findOne({StudentID: studentid})
-            if(!studentDb){
+            let student = await StudentSchema.findOne({StudentID: studentid})
+            if(!student){
                 throw "Student Not Found"
             }
             // report
             let reportResponse = {
-                Student: studentDb
+                Student: student
             }
             if(month){
-                let reportDb = await getStudentReports({studentId: studentDb.id, month: month, year: year})
+                let reportDb = await getStudentReports({studentId: student.id, month: month, year: year})
                 let totalReport = reportDb.count
                 let reports = reportDb.reportsDb
                 let monthlyResult = getReportResultMonthly(reports, totalReport)
@@ -238,8 +319,6 @@ export default class studentReportController{
                 reportResponse.Reports = reports
             }else if(date){
                 let currentDate = new Date(date)
-                console.log('currentDate')
-                console.log(currentDate)
                 let currentMonth = currentDate.getMonth() + 1
                 // date-report
                 let dateReport = await getStudentReports({date: currentDate})
@@ -247,12 +326,10 @@ export default class studentReportController{
                     throw "Report Not Found"
                 }
                 // month-report
-                let reportDb = await getStudentReports({studentId: studentDb.id, month: currentMonth})
+                let reportDb = await getStudentReports({studentId: student.id, month: currentMonth})
                 reportResponse.Reports = reportDb.reportsDb
                 reportResponse.Result = dateReport.reportsDb[0]
             }
-            
-
 
             return res.status(200).json(responseTemplate.successResponse(reportResponse));
         
