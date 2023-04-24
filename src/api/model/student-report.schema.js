@@ -5,9 +5,15 @@ const schema = new mongoose.Schema({
     Date: Date,
     Attendance: Boolean,
     HomeworkScore: Number,
+    HomeworkScoreRequired: Number,
     TestScore: Number,
+    TestScoreRequired: Number,
     TotalScore: Number,
     Month: {
+        type: Number,
+        index: true
+    },
+    Year: {
         type: Number,
         index: true
     },
@@ -32,10 +38,10 @@ const schema = new mongoose.Schema({
 //     next()
 // })
 
-schema.pre(/^find/, function (next) {
-    this.populate("StudentID")
-    next()
-})
+// schema.pre(/^find/, function (next) {
+//     this.populate("StudentID")
+//     next()
+// })
 
 const StudentReportSchema = mongoose.model("StudentReport", schema);
 export default StudentReportSchema
