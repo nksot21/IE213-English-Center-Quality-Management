@@ -2,6 +2,7 @@ import StudentReportSchema from "../model/student-report.schema.js"
 import Response from "../helpers/response.js";
 import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
+import studentReportController from "../studentReport/report.controller.js";
 
 export const createAttendance = async (req, res, next) => {
     const attendancesReq = req.body.attendances
