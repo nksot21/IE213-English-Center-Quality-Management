@@ -6,12 +6,26 @@ export default class ClassesController {
     //-------getAllClasses--------
     static async getAllClasses(req, res, next) {
         try {
-            const classes = await ClassSchema.find();
-            if(!classes) {
-                throw "error";
+            const ClassType = req.query.classType;
+            const ScoreIncome = req.query.scoreIncome;
+            const ScoreDesire = req.query.scoreDesire;
+            if (!ClassType && !ScoreIncome && !ScoreDesire){
+                const classes = await ClassSchema.find();
+                if(!classes) {
+                    throw "error";
+                }
+    
+                return res.status(200).json(Response.successResponse(classes));
             }
-
-            return res.status(200).json(Response.successResponse(classes));
+            else{
+                const classes = await ClassSchema.find({Type: ClassType, 
+                    ScoreRequired: {$lte: ScoreIncome},
+                    ScoreTarget: {$gte: ScoreDesire}});
+                if(!classes) {
+                    throw "error";
+                }
+                return res.status(200).json(Response.successResponse(classes));
+            }
         }
         catch (error) {
             return res.json(Response.handlingErrorResponse(error));
@@ -31,6 +45,7 @@ export default class ClassesController {
             return res.json(Response.handlingErrorResponse(error));
         }
     }
+
 
     //-----------createClasses------------
     static async createClasses(req, res) {
