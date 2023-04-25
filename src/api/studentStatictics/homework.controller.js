@@ -3,6 +3,7 @@ import Response from "../helpers/response.js";
 import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import HomeworkSchema from "../model/homework.schema.js";
+import studentReportController from "../studentReport/report.controller.js";
 
 export const createHomework = async (req, res, next) => {
     const homeworksReq = req.body.homeworks
