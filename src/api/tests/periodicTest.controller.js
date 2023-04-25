@@ -1,4 +1,5 @@
 import Response from "../helpers/response.js";
+import ClassSchema from "../model/class.schema.js";
 import TestSchema from "../model/test.schema.js";
 
 export const createPeriodicTest = async (req, res, next) => {
@@ -35,9 +36,13 @@ export const getPeriodicTests = async (req, res, next) => {
 }
 
 export const getPeriodicsTestByClass = async (req, res, next) => {
-    const periodicTest = await TestSchema.find({
+    const _class = await ClassSchema.findOne({
         ClassID: req.params.classId
     })
+    
+    const periodicTests = await TestSchema.find({
+        ClassID: _class._id
+    })
 
-    return res.json(Response.successResponse(periodicTest))
+    return res.json(Response.successResponse(periodicTests))
 }

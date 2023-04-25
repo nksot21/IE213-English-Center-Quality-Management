@@ -5,7 +5,7 @@ const testRoute = express.Router()
 
 testRoute.route('/homework').post(createHomework).get(getHomework)
 testRoute.route('/homework/:classId').get(getHomeworkByClass)
-testRoute.route('/periodic-test').post(createPeriodicTest).get(getPeriodicTests)
-testRoute.route('/periodic-test/:classId').get(getPeriodicsTestByClass)
+testRoute.route('/periodic-tests').post(createPeriodicTest).get(getPeriodicTests)
+testRoute.route('/periodic-tests/:classId').get(getPeriodicsTestByClass)
 
 export default testRoute
