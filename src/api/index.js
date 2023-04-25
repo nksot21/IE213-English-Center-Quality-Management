@@ -4,6 +4,7 @@ import studentRoute from './student/student.route.js';
 import statisticsRoute from './studentStatictics/statistics.route.js';
 import reportReportRoute from './studentReport/report.route.js'
 import teacherRoute from "./teacher/teacher.route.js";
+import testRoute from './tests/tests.route.js';
 import classReportRoute from './classReport/classReport.route.js'
 import classRoute from "./classes/classes.route.js";
 const router = express.Router();
@@ -14,5 +15,7 @@ router.use("/students", studentRoute);
 router.use("/student-report", reportReportRoute)
 router.use("/class-report", classReportRoute);
 router.use("/teacher", teacherRoute);
+router.use("/tests", testRoute)
 router.use("/class", classRoute);
+
 export default router

@@ -14,7 +14,7 @@ const schema = new mongoose.Schema({
     },
     GoodLevel: Number,
     MediumLevel: Number,
-    Discription: String,
+    Description: String,
     Type: String,
 })
 const HomeworkSchema = mongoose.model("Homework", schema);

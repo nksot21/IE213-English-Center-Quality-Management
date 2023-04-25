@@ -312,7 +312,7 @@ export default class studentReportController{
             let reportResponse = {
                 Student: student
             }
-            if(month){
+            if(month && year){
                 let reportDb = await getStudentReports({studentId: student.id, month: month, year: year})
                 let totalReport = reportDb.count
                 let reports = reportDb.reportsDb
@@ -331,6 +331,8 @@ export default class studentReportController{
                 let reportDb = await getStudentReports({studentId: student.id, month: currentMonth})
                 reportResponse.Reports = reportDb.reportsDb
                 reportResponse.Result = dateReport.reportsDb[0]
+            }else{
+                
             }
 
             return res.status(200).json(responseTemplate.successResponse(reportResponse));
