@@ -3,6 +3,7 @@ import Response from "../helpers/response.js";
 import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import TestSchema from "../model/test.schema.js";
+import studentReportController from "../studentReport/report.controller.js";
 
 export const createTest = async (req, res, next) => {
     const testsReq = req.body.tests
