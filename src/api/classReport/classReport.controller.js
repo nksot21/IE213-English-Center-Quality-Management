@@ -1,8 +1,12 @@
 import StudentReports from "../model/student-report.schema.js";
 import ClassReportSchema from "../model/class-report.schema.js";
 import StudentSchema from "../model/student.schema.js";
+import ClassSchema from "../model/class.schema.js";
+import responseTemplate from "../helpers/response.js";
+import mongoose from "mongoose";
 
-const getClassNumberLevel = async (reportData) => {
+//get number information of a class
+const getClassLevel = async (reportData) => {
   const studentsReports = await StudentReports.find(reportData);
   console.log("student report:", studentsReports);
   let goodLevel = 0;
@@ -32,56 +36,156 @@ const getClassNumberLevel = async (reportData) => {
   return result;
 };
 
+//get class report
+async function getClassReports({
+  classId = null,
+  month = null,
+  year = null,
+  date = null,
+} = {}) {
+  try {
+    const queries = {};
+    if (classId) queries.ClassID = classId;
+    if (month) {
+      queries.Month = month;
+      queries.Year = year;
+    }
+    if (date) {
+      let newDate = new Date(date);
+
+      let month = newDate.getMonth() + 1;
+      let year = newDate.getFullYear();
+      console.log("get4");
+
+      console.log("date: ", month, year);
+      // nextDay.setDate(date.getDate() + 1);
+
+      queries.Month = month;
+      queries.Year = year;
+    }
+    console.log("queries:", queries);
+    const reportsDb = await ClassReportSchema.find(queries);
+    return reportsDb;
+  } catch (e) {
+    console.log(error);
+    return error.message;
+  }
+}
+
+//call in backend
+async function createUpdateReport(classId, date) {
+  try {
+    if (!date || !classId) {
+      throw "Date and ClassId are needed to create report!";
+    }
+
+    //find class report
+    const reportData = {
+      ClassID: classId,
+      Date: new Date(date),
+    };
+    const reportDb = await ClassReportSchema.findOne(reportData);
+
+    //recaculate classNumberLevel
+    const resultCaculate = await getClassLevel(reportData);
+
+    if (!reportDb) {
+      console.log("dont have report");
+      //create new report
+      let month = reportData.Date.getMonth() + 1;
+      let year = reportData.Date.getFullYear();
+      const newClassReport = await ClassReportSchema.create({
+        ...reportData,
+        ...resultCaculate,
+        Month: month,
+        Year: year,
+      });
+      return newClassReport;
+    } else {
+      console.log("have report");
+      //update report
+      const updatedReport = await reportDb.updateOne(resultCaculate);
+      return updatedReport;
+    }
+  } catch (e) {
+    console.log(error);
+    return error.message;
+  }
+}
 export default class classReportController {
-  static async getClassReportApi(req, res, next) {
+  static async getClassReportDailyApi(req, res, next) {
     try {
-      const { classId, date, isMonth } = req.body;
-      const queries = {
-        classID: classId,
+      const { classId, month, year, date } = req.query;
+      console.log("here:", classId, month, year, date);
+      //find class
+      // let classInfo = await ClassSchema.findOne({ ClassID: classId });
+      // if (!classInfo) throw "Class not found";
+      //report
+      let reportResponse = {
+        //Class: classInfo,
       };
-      //dont know
-      
-      return res.status(200).json(responseTemplate.successResponse(report));
+
+      if (month) {
+        let reportDb = await getClassReports({
+          classId,
+          month,
+          year,
+          date,
+        });
+        reportResponse.reports = reportDb;
+      }
+
+      return res
+        .status(200)
+        .json(responseTemplate.successResponse(reportResponse));
     } catch (error) {
       return res.json(responseTemplate.handlingErrorResponse(error));
     }
   }
 
-  static async createUpdateReport(classId, date) {
+  static async createUpdateReportApi(req, res, next) {
     try {
-      if (!date || !classId) {
-        throw "Date and ClassId are needed to create report!";
-      }
+      const { date, classId } = req.body;
 
-      //find class report
-      const reportData = {
-        ClassID: classId,
-        Date: new Date(date),
-      };
-      const reportDb = await ClassReportSchema.findOne(reportData);
-
-      //recaculate classNumberLevel
-      const resultCaculate = await getClassNumberLevel(reportData);
-
-      if (!reportDb) {
-        console.log("dont have report");
-        //create new report
-        let month = reportData.Date.getMonth() + 1;
-        const newClassReport = await ClassReportSchema.create({
-          ...reportData,
-          ...resultCaculate,
-          Month: month,
-        });
-        return newClassReport;
-      } else {
-        console.log("have report");
-        //update report
-        const updatedReport = await reportDb.updateOne(resultCaculate);
-        return updatedReport;
-      }
+      const result = await createUpdateReport(classId, date);
+      console.log("result:", result);
+      res.status(200).json(responseTemplate.successResponse(result));
     } catch (e) {
-      console.log(error);
-      return error.message;
+      return res.json(responseTemplate.handlingErrorResponse(e));
+    }
+  }
+
+  static async getClassReportMonthlyApi(req, res, next) {
+    try {
+      const { classId } = req.query;
+      if (!classId) {
+        throw "classId is required";
+      }
+      let reports = await ClassReportSchema.aggregate([
+        { $match: { ClassID: new mongoose.Types.ObjectId(classId) } },
+        {
+          $project: {
+            Date: 1,
+            Month: 1,
+            Year: 1,
+            ClassScore: 1,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              Month: "$Month",
+              Year: "$Year",
+            },
+            AvgClassScore: { $avg: "$ClassScore" },
+          },
+        },
+      ]);
+      return res
+        .status(200)
+        .json(responseTemplate.successResponse(reports));
+    } catch (e) {
+       return res.json(responseTemplate.handlingErrorResponse(error));
     }
   }
 }
