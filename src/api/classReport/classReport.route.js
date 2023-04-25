@@ -3,7 +3,8 @@ import classReportController from "./classReport.controller.js";
 const route = express.Router();
 
 
-route.route("/").get(classReportController.getClassReportApi);
-route.route("/").post(classReportController.createUpdateReport);
+route.route("/").get(classReportController.getClassReportDailyApi);
+route.route("/monthly").get(classReportController.getClassReportMonthlyApi);
+route.route("/").post(classReportController.createUpdateReportApi);
 
 export default route;
