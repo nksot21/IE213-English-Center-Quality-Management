@@ -9,7 +9,7 @@ function getTotalScore ({ homeworkScore, testScore} = {}) {
     if(homeworkScore === -1){
         totalScore = (testScore === -1) ? 0 : testScore
     }else{
-        totalScore = (testScore === -1) ? homeworkScore : (parseInt(homeworkScore) + parseInt(testScore)) / 2
+        totalScore = (testScore === -1) ? homeworkScore : (parseFloat(homeworkScore) + parseFloat(testScore)) / 2
     }
     return totalScore
 }
@@ -71,8 +71,10 @@ function getReportResultMonthly(reports, totalReport){
         evalStr = "Good"
     }else if(evalScore < 0.8 && evalScore > 0.5){
         evalStr = "Medium"
+    }else if(evalScore < 0.5 && evalScore > 0){
+       evalStr = "Not-Good"
     }else{
-        evalStr = "Not-Good"
+        evalStr = "Non"
     }
 
     return {
@@ -87,6 +89,30 @@ function getReportResultMonthly(reports, totalReport){
         AverageHomeworkScore: parseFloat(totalHomeworkScore/totalReport),
         AverageTotalScore: parseFloat(totalScore/totalReport),
         Evaluation: evalStr
+    }
+}
+
+async function getStudentReportOverview(studentId){
+    try{
+        let student = await StudentSchema.findOne({StudentID: studentId})
+        .catch(err => {
+            throw err
+        })
+        if(!student){
+            return null
+        }
+
+        let reports = await getStudentReports({studentId: student.id})
+        .catch(err => {
+            console.log(err)
+            throw err
+        })
+        return {
+            Student: student,
+            TotalResult: getReportResultMonthly(reports.reportsDb, reports.count)
+        }
+    }catch(err){
+        return null
     }
 }
 
@@ -202,11 +228,11 @@ export default class studentReportController{
         try{
             const {
               studentid     
-            } = req.query
+            } = req.params
             if(!studentid){
                 throw "StudentId is required"
             }
-            let student = await StudentSchema.findOne({StudentID: studentid})
+            let student = await StudentSchema.findById(studentid)
             if(!student){
                 throw "Student Not Found"
             }
@@ -229,8 +255,8 @@ export default class studentReportController{
                 {
                     $group: {
                         _id: {
-                            Month: "$Month",
-                            Year: "$Year"
+                            Year: "$Year",
+                            Month: "$Month"
                         },
                         TotalReport: {$count: {}},
                         AvgTestScore: {$avg: '$TestScore'},
@@ -243,6 +269,10 @@ export default class studentReportController{
                         TestScoreRequired: {$sum: '$TestScoreRequired'},
                         Attendance: {$sum: "$attended"}
                     },
+                    
+                },
+                {
+                    $sort: {_id: 1}
                 }
                 
             ]).catch(err => {
@@ -251,8 +281,8 @@ export default class studentReportController{
             
             let reportResponse = {
                 Student: student,
-                Report: reports,
-                TotalResult: getReportResultTotal(reports)
+                Reports: reports,
+                Result: getReportResultTotal(reports)
             }
             return res.status(200).json(responseTemplate.successResponse(reportResponse))
         
@@ -263,30 +293,16 @@ export default class studentReportController{
 
     static async getStudentTotalReportAPI(req, res, next) {
         try{
-            const {
-                studentid     
-            } = req.query
-            if(!studentid){
-                throw "StudentId is required"
-            }
-            let student = await StudentSchema.findOne({StudentID: studentid})
+            let students = await StudentSchema.find()
             .catch(err => {
                 throw err
             })
-            if(!student){
-                throw "Student Not Found"
-            }
-
-            let reports = await getStudentReports({studentId: student.id})
-            .catch(err => {
-                console.log(err)
-                throw err
-            })
-            let reportResponse = {
-                Student: student,
-                TotalResult: getReportResultMonthly(reports.reportsDb, reports.count)
-            }
-            return res.status(200).json(responseTemplate.successResponse(reportResponse)); 
+            let reportResponses = []
+            await Promise.all(students.map(async (stu) => {
+                let reportResponse = await getStudentReportOverview(stu.StudentID)
+                reportResponses.push(reportResponse)
+            }))
+            return res.status(200).json(responseTemplate.successResponse(reportResponses)); 
         }catch(error){
             return res.json(responseTemplate.handlingErrorResponse(error));
         }
@@ -302,7 +318,7 @@ export default class studentReportController{
                 date
             } = req.query
             // student
-            let student = await StudentSchema.findOne({StudentID: studentid})
+            let student = await StudentSchema.findById(studentid)
             if(!student){
                 throw "Student Not Found"
             }
@@ -326,7 +342,7 @@ export default class studentReportController{
                     throw "Report Not Found"
                 }
                 // month-report
-                let reportDb = await getStudentReports({studentId: student.id, month: currentMonth})
+                let reportDb = await getStudentReports({studentId: student.id, month: currentMonth, year: currentDate.getFullYear()})
                 reportResponse.Reports = reportDb.reportsDb
                 reportResponse.Result = dateReport.reportsDb[0]
             }else{
