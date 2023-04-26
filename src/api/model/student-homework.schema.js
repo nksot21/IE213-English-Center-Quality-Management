@@ -16,7 +16,8 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:"Student",
     },
-    ClassID: mongoose.Schema.Types.ObjectId
+    ClassID: mongoose.Schema.Types.ObjectId,
+    RequiredScore: Number
 })
 
 // schema.pre('save', async function (next) {

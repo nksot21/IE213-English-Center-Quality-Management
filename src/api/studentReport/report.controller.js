@@ -126,6 +126,7 @@ async function getStudentReports({
     date = null
 } = {}){
     try{
+        console.log("year", year)
         const queries = {}
         if(classId)
             queries.ClassID = classId
@@ -317,6 +318,7 @@ export default class studentReportController{
                 year,
                 date
             } = req.query
+            console.log("query",req.query)
             // student
             let student = await StudentSchema.findById(studentid)
             if(!student){

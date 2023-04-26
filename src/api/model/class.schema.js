@@ -19,6 +19,7 @@ const schema = new mongoose.Schema({
         type: Number,
         require: true 
     },
+    TeacherName: String,
     TeacherID: {
         type: mongoose.Schema.Types.ObjectId,
         ref:"TeacherID",
@@ -31,7 +32,6 @@ schema.virtual('_Teacher', {
     foreignField: '_id',
     justOne: true
 })
-
 
 
 const ClassSchema = mongoose.model("Class", schema);

@@ -48,21 +48,35 @@ export default class ClassesController {
 
 
     //-----------createClasses------------
+
     static async createClasses(req, res) {
         try {
-            console.debug("Creating...");
-            const classExists = await ClassSchema.findOne({ClassID: req.body.ClassID});
-            if(classExists) {
-                return res.status(400).json(Response.errorResponse("ClassID already exists"));
-            }
-            const newClass = new ClassSchema({ ...req.body });
-            const savedClass = await newClass.save();
-            return res.status(201).json(Response.successResponse(savedClass));
-        }
+          console.debug("Creating Class...");
+          const { Type, ScoreTarget } = req.body;
+      
+          let ClassID;
+          if (Type.startsWith("TC") && !isNaN(Type.substr(2)) && !isNaN(ScoreTarget)) {
+            ClassID = `TOE${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
+          } else if (Type.startsWith("IET") && !isNaN(Type.substr(3)) && !isNaN(ScoreTarget)) {
+            ClassID = `IET${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
+          } else {
+            return res.status(400).json(Response.errorResponse("Invalid Type or ScoreTarget"));
+          }
+      
+          const classExists = await ClassSchema.findOne({ ClassID });
+          if (classExists) {
+            return res.status(400).json(Response.errorResponse("ClassID already exists"));
+          }
+      
+          const newClass = new ClassSchema({ ...req.body, ClassID });
+          const savedClass = await newClass.save();
+          return res.status(201).json(Response.successResponse(savedClass));
+        } 
         catch (error) {
-            return res.json(Response.handlingErrorResponse(error));
+          return res.json(Response.handlingErrorResponse(error));
         }
-    }
+      }
+      
 
     //-------------updateClass-------------
     static async updateClasses(req, res) {
@@ -83,7 +97,7 @@ export default class ClassesController {
             return res.json(Response.handlingErrorResponse(error));
         }
     }
-
+    
     //-------------deleteClass-------------
     static async deleteClasses(req, res) {
         try {

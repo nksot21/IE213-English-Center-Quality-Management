@@ -3,7 +3,7 @@ import Response from "../helpers/response.js";
 
 export default class TeacherController {
   //Lấy danh sách giáo viên:
-  static async getTeachers(req, res) {
+  static async getTeachers(req, res, next) {
     try {
       const teacher = await TeacherSchema.find();
       if (!teacher) {
@@ -27,17 +27,31 @@ export default class TeacherController {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
-  //Thêm giáo viên:
+
+
+  //Thêm giáo viên
+
   static async addTeacher(req, res) {
     try {
-      console.debug("Adding teacher...");
-      const teacher = new TeacherSchema({ ...req.body });
-      const response = await teacher.save();
-      return res.json(Response.successResponse(response));
+        const teachers = await TeacherSchema.find({});
+        let newTeacherID;
+        if (teachers.length === 0) {
+            newTeacherID = "TEA0001";
+        } else {
+            const lastTeacherID = teachers[teachers.length - 1].TeacherID;
+            const lastTeacherNum = parseInt(lastTeacherID.slice(3), 10);
+            newTeacherID = "TEA" + ("000" + (lastTeacherNum + 1)).slice(-4);
+        }
+        const newTeacher = new TeacherSchema({ ...req.body, TeacherID: newTeacherID });
+        const savedTeacher = await newTeacher.save();
+        return res.status(201).json(Response.successResponse(savedTeacher));
     } catch (error) {
-      return res.json(Response.handlingErrorResponse(error));
+        return res.json(Response.handlingErrorResponse(error));
     }
-  }
+}
+
+
+
   //Cập nhật thông tin giáo viên:
   static async updateTeacher(req, res) {
     try {
@@ -69,7 +83,7 @@ export default class TeacherController {
           .status(404)
           .json(Response.errorResponse("Teacher not found."));
       }
-      return res.json(Response.successResponse(deletedTeacher));
+      return res.json(Response.successResponse('Teacher deleted successfully'));
     } catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
