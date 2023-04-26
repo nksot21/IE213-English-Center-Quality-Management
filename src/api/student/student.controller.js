@@ -45,25 +45,31 @@ export default class StudentController {
     }
   }
 
-  //-------------createStudent-------------
+
+
+//-------------createStudent-------------
 
   static async createStudent(req, res) {
-    try { 
-        console.debug("Creating...");
-        const studentExists = await StudentSchema.findOne({ StudentID: req.body.StudentID });
-        if (studentExists) {
-            return res.status(400).json(Response.errorResponse("StudentID already exists"));
+    try {
+        const students = await StudentSchema.find({});
+        let newStudentID;
+        if (students.length === 0) {
+            newStudentID = "STD0001";
+        } else {
+            const lastStudentID = students[students.length - 1].StudentID;
+            const lastStudentNum = parseInt(lastStudentID.slice(3), 10);
+            newStudentID = "STD" + ("000" + (lastStudentNum + 1)).slice(-4);
         }
-        const newStudent = new StudentSchema({ ...req.body });
+        const newStudent = new StudentSchema({ ...req.body, StudentID: newStudentID });
         const savedStudent = await newStudent.save();
         return res.status(201).json(Response.successResponse(savedStudent));
-    } 
-    catch (error) {
+    } catch (error) {
         return res.json(Response.handlingErrorResponse(error));
     }
-  }
+}
 
-    //-------------updateStudent-------------
+
+  //-------------updateStudent-------------
 
   static async updateStudent(req, res) {
   try {
