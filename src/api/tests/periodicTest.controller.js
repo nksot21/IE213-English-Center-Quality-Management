@@ -39,6 +39,10 @@ export const getPeriodicsTestByClass = async (req, res, next) => {
     const _class = await ClassSchema.findOne({
         ClassID: req.params.classId
     })
+
+    if (!_class) {
+        res.json(Response.errorResponse("Class not found!"))
+    }
     
     const periodicTests = await TestSchema.find({
         ClassID: _class._id
