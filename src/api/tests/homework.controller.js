@@ -39,5 +39,9 @@ export const getHomeworkByClass = async (req, res, next) => {
         ClassID: req.params.classId
     })
 
+    if (!_class) {
+        res.json(Response.errorResponse("Class not found!"))
+    }
+
     return res.json(Response.successResponse(homework))
 }

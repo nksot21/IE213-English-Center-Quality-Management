@@ -4,6 +4,9 @@ import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import TestSchema from "../model/test.schema.js";
 import studentReportController from "../studentReport/report.controller.js";
+import {
+    ObjectId
+} from "mongodb";
 
 export const createTest = async (req, res, next) => {
     const testsReq = req.body.tests
@@ -12,38 +15,44 @@ export const createTest = async (req, res, next) => {
     await Promise.all(
         testsReq.map(async test => {
             const {
-                score,
-                testId,
-                studentId,
-                date
+                Score,
+                TestID,
+                StudentID,
+                Date
             } = test
 
-            const student = await StudentSchema.findOne({
-                StudentID: studentId
-            })
-            if (!student) res.json(Response.errorResponse(404, `Student with ID ${studentId} is not found`))
+            const student = await StudentSchema.findById(StudentID._id)
+            if (!student) res.json(Response.errorResponse(404, `Student with ID ${StudentID.StudentID} is not found`))
 
             const testData = {
-                StudentID: student.id,
-                Date: new Date(date),
-                TestID: testId,
+                StudentID: student._id,
+                Date: Date,
+                TestID: TestID,
             }
-            let studentIdTemp = student.id
+            let studentIdTemp = student._id
             const existedTest = await StudentTestSchema.findOne(testData)
             if (!existedTest) {
                 const newTest = await StudentTestSchema.create({
                     ...testData,
-                    Score: score,
+                    Score: Score,
                     ClassID: student.ClassID
                 })
-                await studentReportController.createStudentReport({date, testScore: score,  studentId: studentIdTemp})
+                await studentReportController.createStudentReport({
+                    Date,
+                    testScore: Score,
+                    studentId: studentIdTemp
+                })
                 testsRes.push(newTest)
             } else {
                 const updatedTest = await StudentTestSchema.findOneAndUpdate(testData, {
-                    Score: score,
+                    Score: Score,
                     ClassID: student.ClassID
                 })
-                await studentReportController.createStudentReport({date, testScore: score,  studentId: studentIdTemp})
+                await studentReportController.createStudentReport({
+                    Date,
+                    testScore: Score,
+                    studentId: studentIdTemp
+                })
                 testsRes.push(updatedTest)
             }
         }))
@@ -60,11 +69,23 @@ export const getTests = async (req, res, next) => {
     })
 
     const tests = await StudentTestSchema.find({
-            ClassID: _class.id
+            ClassID: _class._id
         })
         .select("StudentID Score TestID Date")
 
-    return res.json(Response.successResponse(tests))
+    const distinctTestIds = await StudentTestSchema.find({
+        ClassID: _class._id
+    }).distinct('TestID')
+
+    const existingTests = await Promise.all(distinctTestIds.map(async existingTest => {
+        const test = await TestSchema.findById(new ObjectId(existingTest))
+        return test
+    }))
+
+    return res.json(Response.successResponse({
+        tests,
+        existingTests
+    }))
 }
 
 // Delete all tests of a date of a class
