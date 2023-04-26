@@ -10,8 +10,12 @@ const schema = new mongoose.Schema({
         type: String,
         unique: true,
     },
-    DateOfBirth: Date,
-    StartedDate: Date,
+    DateOfBirth: {
+        type: Date,
+    },
+    StartedDate: {
+        type: Date,
+    },
     Email: {
         type: String,
     },
@@ -24,5 +28,11 @@ const schema = new mongoose.Schema({
 })
 
 
+schema.pre('save', function(next) {
+    this.Name = `${this.FirstName} ${this.LastName}`;
+    next();
+});
+
+
 const TeacherSchema = mongoose.model("Teacher", schema);
- export default TeacherSchema
+export default TeacherSchema
