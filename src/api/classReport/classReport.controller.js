@@ -117,12 +117,8 @@ export default class classReportController {
     try {
       const { classId, month, year, date } = req.query;
       console.log("here:", classId, month, year, date);
-      //find class
-      // let classInfo = await ClassSchema.findOne({ ClassID: classId });
-      // if (!classInfo) throw "Class not found";
-      //report
+      
       let reportResponse = {
-        //Class: classInfo,
       };
 
       if (month) {
