@@ -4,9 +4,6 @@ import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import TestSchema from "../model/test.schema.js";
 import studentReportController from "../studentReport/report.controller.js";
-import {
-    ObjectId
-} from "mongodb";
 
 export const createTest = async (req, res, next) => {
     const testsReq = req.body.tests
@@ -73,19 +70,7 @@ export const getTests = async (req, res, next) => {
         })
         .select("StudentID Score TestID Date")
 
-    const distinctTestIds = await StudentTestSchema.find({
-        ClassID: _class._id
-    }).distinct('TestID')
-
-    const existingTests = await Promise.all(distinctTestIds.map(async existingTest => {
-        const test = await TestSchema.findById(new ObjectId(existingTest))
-        return test
-    }))
-
-    return res.json(Response.successResponse({
-        tests,
-        existingTests
-    }))
+    return res.json(Response.successResponse(tests))
 }
 
 // Delete all tests of a date of a class

@@ -19,4 +19,3 @@ const schema = new mongoose.Schema({
 })
 const HomeworkSchema = mongoose.model("Homework", schema);
 export default HomeworkSchema
-
