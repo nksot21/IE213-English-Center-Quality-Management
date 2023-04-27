@@ -1,4 +1,5 @@
 import Response from "../helpers/response.js";
+import ClassSchema from "../model/class.schema.js";
 import HomeworkSchema from "../model/homework.schema.js";
 
 export const createHomework = async (req, res, next) => {
@@ -35,13 +36,17 @@ export const getHomework = async (req, res, next) => {
 }
 
 export const getHomeworkByClass = async (req, res, next) => {
-    const homework = await HomeworkSchema.find({
+    const _class = await ClassSchema.findOne({
         ClassID: req.params.classId
     })
 
     if (!_class) {
         res.json(Response.errorResponse("Class not found!"))
     }
+
+    const homework = await HomeworkSchema.find({
+        ClassID: _class._id
+    })
 
     return res.json(Response.successResponse(homework))
 }
