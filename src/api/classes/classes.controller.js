@@ -55,7 +55,7 @@ export default class ClassesController {
           const { Type, ScoreTarget } = req.body;
       
           let ClassID;
-          if (Type.startsWith("TC") && !isNaN(Type.substr(2)) && !isNaN(ScoreTarget)) {
+          if (Type.startsWith("TOE") && !isNaN(Type.substr(3)) && !isNaN(ScoreTarget)) {
             ClassID = `TOE${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
           } else if (Type.startsWith("IET") && !isNaN(Type.substr(3)) && !isNaN(ScoreTarget)) {
             ClassID = `IET${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
