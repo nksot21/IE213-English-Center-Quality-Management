@@ -7,7 +7,7 @@ import teacherRoute from "./teacher/teacher.route.js";
 import testRoute from './tests/tests.route.js';
 import classReportRoute from './classReport/classReport.route.js'
 import classRoute from "./classes/classes.route.js";
-import centerReportRoute from "./centerReport/centerReport.route";
+import centerReportRoute from "./centerReport/centerReport.route.js";
 const router = express.Router();
 
 router.use("/user", userRoute);
