@@ -66,6 +66,10 @@ export const getHomeworks = async (req, res, next) => {
         ClassID: classId
     })
 
+    if (!_class) {
+        return res.json(Response.errorResponse(404, "Class not found!"))
+    }
+
     const homeworks = await StudentHomeworkSchema.find({
             ClassID: _class._id
         })

@@ -65,6 +65,10 @@ export const getTests = async (req, res, next) => {
         ClassID: classId
     })
 
+    if (!_class) {
+        return res.json(Response.errorResponse(404, "Class not found!"))
+    }
+
     const tests = await StudentTestSchema.find({
             ClassID: _class._id
         })
