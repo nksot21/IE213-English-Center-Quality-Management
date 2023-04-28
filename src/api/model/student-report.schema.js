@@ -32,16 +32,16 @@ const schema = new mongoose.Schema({
 //     justOne: true
 // })
 
-// schema.pre('save', function (next) {
-//     const student = StudentSchema.findById(this.StudentID).then()
+// schema.pre('save',async function (next) {
+//     const student = await StudentSchema.findById(this.StudentID)
 //     this.ClassID = student.ClassID
 //     next()
 // })
 
-// schema.pre(/^find/, function (next) {
-//     this.populate("StudentID")
-//     next()
-// })
+schema.pre(/^find/, function (next) {
+    this.populate("StudentID")
+    next()
+})
 
 const StudentReportSchema = mongoose.model("StudentReport", schema);
 export default StudentReportSchema
