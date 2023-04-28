@@ -7,8 +7,9 @@ const schema = new mongoose.Schema({
     MediumLevel: Number,
     BadLevel: Number,
     TotalStudent: Number,
+    CenterScore: Number,
     Month: {
-        type: [Number],
+        type: Number,
         index: true
     }
 })

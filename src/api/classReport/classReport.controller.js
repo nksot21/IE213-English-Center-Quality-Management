@@ -117,12 +117,8 @@ export default class classReportController {
     try {
       const { classId, month, year, date } = req.query;
       console.log("here:", classId, month, year, date);
-      //find class
-      // let classInfo = await ClassSchema.findOne({ ClassID: classId });
-      // if (!classInfo) throw "Class not found";
-      //report
+      
       let reportResponse = {
-        //Class: classInfo,
       };
 
       if (month) {
@@ -146,7 +142,6 @@ export default class classReportController {
   static async createUpdateReportApi(req, res, next) {
     try {
       const { date, classId } = req.body;
-
       const result = await createUpdateReport(classId, date);
       console.log("result:", result);
       res.status(200).json(responseTemplate.successResponse(result));
