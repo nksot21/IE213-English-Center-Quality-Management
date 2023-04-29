@@ -7,6 +7,7 @@ import studentReportController from "../studentReport/report.controller.js";
 
 export const createTest = async (req, res, next) => {
     const testsReq = req.body.tests
+    console.log(testsReq)
     let testsRes = []
 
     await Promise.all(
@@ -24,7 +25,7 @@ export const createTest = async (req, res, next) => {
             const testData = {
                 StudentID: student._id,
                 Date: Date,
-                TestID: TestID,
+                TestID: TestID._id,
             }
             let studentIdTemp = student._id
             const existedTest = await StudentTestSchema.findOne(testData)
@@ -41,7 +42,7 @@ export const createTest = async (req, res, next) => {
                 })
                 testsRes.push(newTest)
             } else {
-                const updatedTest = await StudentTestSchema.findOneAndUpdate(testData, {
+                const updatedTest = await StudentTestSchema.updateOne(testData, {
                     Score: Score,
                     ClassID: student.ClassID
                 })
@@ -86,13 +87,19 @@ export const deleteTest = async (req, res, next) => {
         date
     } = req.body
 
+    console.log(date)
+
     const _class = await ClassSchema.findOne({
         ClassID: classId
     })
 
-    await StudentTestSchema.deleteOne({
-        ClassID: _class.id,
-        Date: new Date(date)
+    if (!_class) {
+        return res.json(Response.errorResponse(404, "Class not found!"))
+    }
+
+    await StudentTestSchema.deleteMany({
+        ClassID: _class._id,
+        Date: date
     })
 
     return res.json(Response.successResponse())
