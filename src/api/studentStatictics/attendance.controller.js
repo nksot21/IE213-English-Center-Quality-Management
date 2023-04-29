@@ -72,7 +72,6 @@ export const getAttendances = async (req, res, next) => {
             ClassID: _class.id
         })
         .select("StudentID Date Attendance")
-    console.log(_class)
 
     return res.json(Response.successResponse(attendances))
 }
@@ -86,13 +85,15 @@ export const deleteAttendance = async (req, res, next) => {
         date
     } = req.body
 
+    console.log(req.body)
+
     const _class = await ClassSchema.findOne({
         ClassID: classId
     })
 
-    await StudentReportSchema.deleteOne({
-        ClassID: _class.id,
-        Date: new Date(date)
+    await StudentReportSchema.deleteMany({
+        ClassID: _class._id,
+        Date: date 
     })
 
     return res.json(Response.successResponse())

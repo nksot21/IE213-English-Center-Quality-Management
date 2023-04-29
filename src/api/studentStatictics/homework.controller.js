@@ -91,9 +91,9 @@ export const deleteHomework = async (req, res, next) => {
         ClassID: classId
     })
 
-    await StudentHomeworkSchema.deleteOne({
-        ClassID: _class.id,
-        Date: new Date(date)
+    await StudentHomeworkSchema.deleteMany({
+        ClassID: _class._id,
+        Date: date
     })
 
     return res.json(Response.successResponse())
