@@ -4,33 +4,73 @@ import Response from "../helpers/response.js";
 
 export default class ClassesController {
     //-------getAllClasses--------
-    static async getAllClasses(req, res, next) {
-        try {
-            const ClassType = req.query.classType;
-            const ScoreIncome = req.query.scoreIncome;
-            const ScoreDesire = req.query.scoreDesire;
-            if (!ClassType && !ScoreIncome && !ScoreDesire){
-                const classes = await ClassSchema.find();
-                if(!classes) {
-                    throw "error";
-                }
+    // static async getAllClasses(req, res, next) {
+    //     try {
+    //         const ClassType = req.query.classType;
+    //         const ScoreIncome = req.query.scoreIncome;
+    //         const ScoreDesire = req.query.scoreDesire;
+
+    //         if (!ClassType && !ScoreIncome && !ScoreDesire){
+    //             const classes = await ClassSchema.find();
+    //             if(!classes) {
+    //                 throw "error";
+    //             }
     
-                return res.status(200).json(Response.successResponse(classes));
-            }
-            else{
-                const classes = await ClassSchema.find({Type: ClassType, 
-                    ScoreRequired: {$lte: ScoreIncome},
-                    ScoreTarget: {$gte: ScoreDesire}});
-                if(!classes) {
-                    throw "error";
-                }
-                return res.status(200).json(Response.successResponse(classes));
-            }
-        }
-        catch (error) {
-            return res.json(Response.handlingErrorResponse(error));
-        }
-    }
+    //             return res.status(200).json(Response.successResponse(classes));
+    //         }
+    //         else{
+    //             const classes = await ClassSchema.find({
+    //                 Type: ClassType, 
+    //                 ScoreRequired: {$lte: ScoreIncome},
+    //                 ScoreTarget: {$gte: ScoreDesire}
+    //               });
+    //             if(!classes) {
+    //                 throw "error";
+    //             }
+    //             return res.status(200).json(Response.successResponse(classes));
+    //         }
+    //     }
+    //     catch (error) {
+    //         return res.json(Response.handlingErrorResponse(error));
+    //     }
+    // }
+
+
+    
+    //-------getAllClasses--------
+    static async getAllClasses(req, res, next) {
+      try {
+          const Type = req.query.classType;
+          const ScoreIncome = req.query.scoreIncome;
+          const ScoreDesire = req.query.scoreDesire;
+          const TeacherName = req.query.teacherName; 
+          let query = {}; 
+  
+          if (Type || ScoreIncome || ScoreDesire || TeacherName) {
+              if (Type) {
+                  query.Type = Type;
+              }
+              if (ScoreIncome) {
+                  query.ScoreRequired = {$lte: ScoreIncome};
+              }
+              if (ScoreDesire) {
+                  query.ScoreTarget = {$gte: ScoreDesire};
+              }
+              if (TeacherName) {
+                  query.TeacherName = TeacherName;
+              }
+          }
+          const classes = await ClassSchema.find(query);
+          if (!classes) {
+              throw "error";
+          }
+          return res.status(200).json(Response.successResponse(classes));
+      }
+      catch (error) {
+          return res.json(Response.handlingErrorResponse(error));
+      }
+  }
+  
 
     //---------getClassesById---------
     static async getClassesById(req, res, next) {
@@ -55,11 +95,16 @@ export default class ClassesController {
           const { Type, ScoreTarget } = req.body;
       
           let ClassID;
-          if (Type.startsWith("TOE") && !isNaN(Type.substr(3)) && !isNaN(ScoreTarget)) {
+          if ((Type === "TC01" || Type === "TC02") && !isNaN(ScoreTarget)) {
             ClassID = `TOE${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
-          } else if (Type.startsWith("IET") && !isNaN(Type.substr(3)) && !isNaN(ScoreTarget)) {
+          } 
+          else if (Type === "TC03" && !isNaN(ScoreTarget)) {
             ClassID = `IET${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
-          } else {
+          } 
+          else if (Type === "TC04" && !isNaN(ScoreTarget)) {
+            ClassID = `TOEFL${ScoreTarget}${`.`}${Math.floor(100 + Math.random() * 900)}`;
+          } 
+          else {
             return res.status(400).json(Response.errorResponse("Invalid Type or ScoreTarget"));
           }
       
