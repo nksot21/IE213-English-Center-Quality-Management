@@ -72,7 +72,7 @@ function getReportResultMonthly(reports, totalReport){
     }else if(evalScore < 0.8 && evalScore > 0.5){
         evalStr = "Medium"
     }else if(evalScore < 0.5 && evalScore > 0){
-       evalStr = "Not-Good"
+       evalStr = "Not-good"
     }else{
         evalStr = "Non"
     }
@@ -294,10 +294,19 @@ export default class studentReportController{
 
     static async getStudentTotalReportAPI(req, res, next) {
         try{
-            let students = await StudentSchema.find()
+            let query = {};
+            //Filter by typeClass
+            if (req.query.typeClass) {
+                query.TypeClass = req.query.typeClass;
+            }
+            if (req.query.classId) {
+                query.ClassID = req.query.classId;
+            }
+            let students = await StudentSchema.find(query)
             .catch(err => {
                 throw err
             })
+
             let reportResponses = []
             await Promise.all(students.map(async (stu) => {
                 let reportResponse = await getStudentReportOverview(stu.StudentID)
