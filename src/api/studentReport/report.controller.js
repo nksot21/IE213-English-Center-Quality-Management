@@ -302,6 +302,10 @@ export default class studentReportController{
             if (req.query.classId) {
                 query.ClassID = req.query.classId;
             }
+            let Evaluation = "";
+            if (req.query.evaluation) {
+                Evaluation = req.query.evaluation;
+            }
             let students = await StudentSchema.find(query)
             .catch(err => {
                 throw err
@@ -309,8 +313,15 @@ export default class studentReportController{
 
             let reportResponses = []
             await Promise.all(students.map(async (stu) => {
-                let reportResponse = await getStudentReportOverview(stu.StudentID)
-                reportResponses.push(reportResponse)
+                let reportResponse = await getStudentReportOverview(stu.StudentID);
+                if (Evaluation != "") {
+                    if (reportResponse.TotalResult.Evaluation == Evaluation) {
+                        reportResponses.push(reportResponse);
+                    };
+                }
+                else {
+                reportResponses.push(reportResponse);
+            }
             }))
             return res.status(200).json(responseTemplate.successResponse(reportResponses)); 
         }catch(error){
