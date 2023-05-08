@@ -87,8 +87,6 @@ export const deleteTest = async (req, res, next) => {
         date
     } = req.body
 
-    console.log(date)
-
     const _class = await ClassSchema.findOne({
         ClassID: classId
     })

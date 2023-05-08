@@ -41,7 +41,7 @@ export const getHomeworkByClass = async (req, res, next) => {
     })
 
     if (!_class) {
-        res.json(Response.errorResponse("Class not found!"))
+        return res.json(Response.errorResponse("Class not found!"))
     }
 
     const homework = await HomeworkSchema.find({

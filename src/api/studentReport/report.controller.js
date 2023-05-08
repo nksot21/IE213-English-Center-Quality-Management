@@ -197,7 +197,7 @@ export default class studentReportController{
                     HomeworkScoreRequired: (homeworkScore === -1) ? reportDb.HomeworkScoreRequired : homeworkScoreRequired,
                     TestScore: (testScore === -1) ? reportDb.TestScore : testScore,
                     TestScoreRequired: (testScore === -1) ? reportDb.TestScoreRequired : testScoreRequired,
-                    Attendance: (!attendance) ? reportDb.Attendance : attendance
+                    Attendance: (attendance === undefined) ? reportDb.Attendance : attendance
                 }
                 
                 let newTotalScore = getTotalScore({homeworkScore: updateData.HomeworkScore, testScore: updateData.TestScore})
