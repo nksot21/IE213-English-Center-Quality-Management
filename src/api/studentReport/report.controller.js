@@ -126,7 +126,6 @@ async function getStudentReports({
     date = null
 } = {}){
     try{
-        console.log("year", year)
         const queries = {}
         if(classId)
             queries.ClassID = classId
@@ -292,9 +291,85 @@ export default class studentReportController{
         }
     }
 
+    static async getMonthlyReportAPI(req, res, next) {
+        try{
+            const {
+              classid,   
+              month,
+              year  
+            } = req.query
+            let queryObj = {}
+            if(classid){
+                queryObj.ClassID = new mongoose.Types.ObjectId(classid)
+            }
+            if(month && year){
+                queryObj.Year = parseInt(year)
+                queryObj.Month = parseInt(month)
+                
+            }
+            
+            let reports = await StudentReportSchema.aggregate([
+                { $match: queryObj},
+                {
+                    $project: {
+                        Year: 1,
+                        Month: 1,
+                        StudentID: 1,
+                        TestScore: 1,
+                        HomeworkScore: 1,
+                        TotalScore: 1,
+                        HomeworkScoreRequired: 1,
+                        TestScoreRequired: 1,
+                        attended: {
+                            $cond: [{$eq: ["$Attendance", true]}, 1, 0]
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$StudentID',
+                        TotalReport: {$count: {}},
+                        AvgTestScore: {$avg: '$TestScore'},
+                        AvgHomeWorkScore: {$avg: '$HomeworkScore'},
+                        AvgTotalScore: {$avg: '$TotalScore'},
+                        TestScore: {$sum: '$TestScore'},
+                        HomeworkScore: {$sum: '$HomeworkScore'},
+                        TotalScore: {$sum: '$TotalScore'},
+                        HomeworkScoreRequired: {$sum: '$HomeworkScoreRequired'},
+                        TestScoreRequired: {$sum: '$TestScoreRequired'},
+                        Attendance: {$sum: "$attended"},
+                        Month: {$first: "$Month"},
+                        Year: {$first: '$Year'}
+                    },
+                    
+                },
+                {
+                    $sort: {_id: 1}
+                }
+                
+            ]).catch(err => {
+                console.log(err)
+            })
+            
+            let reportResponse = {
+                Reports: reports
+            }
+            return res.status(200).json(responseTemplate.successResponse(reportResponse))
+        
+        }catch(error){
+            console.log(error)
+            return res.json(responseTemplate.handlingErrorResponse(error));
+        }
+    }
+
+    //
     static async getStudentTotalReportAPI(req, res, next) {
         try{
-            let query = {};
+            const {
+                istop  
+              } = req.query
+            console.log(req.query)
+            let query = {}
             //Filter by typeClass
             if (req.query.typeClass) {
                 query.TypeClass = req.query.typeClass;
@@ -323,8 +398,14 @@ export default class studentReportController{
                 reportResponses.push(reportResponse);
             }
             }))
+            if(istop === 'true' && reportResponses.length !== 0){
+                const result = reportResponses.filter(report => report.TotalResult.TotalScore > 0)
+                result.sort((a, b) => b.TotalResult.AverageTotalScore - a.TotalResult.AverageTotalScore)
+                reportResponses = result.slice(0, (result.length < 5 ? result.length : 5 ))
+            }
             return res.status(200).json(responseTemplate.successResponse(reportResponses)); 
         }catch(error){
+            console.log(error)
             return res.json(responseTemplate.handlingErrorResponse(error));
         }
     }
@@ -375,6 +456,57 @@ export default class studentReportController{
         
         }catch(error){
             return res.json(responseTemplate.handlingErrorResponse(error));
+        }
+    }
+
+
+    // Get Studied Date / Month API
+    static async getStudiedDateAPI(req, res, next){
+        try{
+            const studentId = req.params.studentid
+            let response = {
+                Date: [],
+                Month: []
+            }
+           // Get Month
+            let reportMonths = await StudentReportSchema.aggregate([
+                { $match: {StudentID: new mongoose.Types.ObjectId(studentId)}},
+                {
+                    $group: {
+                        _id: {
+                            Year: "$Year",
+                            Month: "$Month"
+                        },
+                    },
+                    
+                },
+                {
+                    $sort: {_id: 1}
+                }
+            ]).catch(err => {
+                console.log(err)
+            })
+            reportMonths.map(month => {
+                let m = month._id.Month < 10 ?  "0" +  month._id.Month : month._id.Month
+                let str = m  + "/" + month._id.Year
+                response.Month.push(str)
+            })
+            // Get Date
+            let reportDates = await StudentReportSchema.find({
+                StudentID: studentId
+            }).sort({Date: 1})
+            reportDates.map(report => {
+                let year = report.Date.getFullYear() 
+                let month = report.Date.getMonth() + 1
+                let monthStr = month  < 10 ?  "0" + month  : month 
+                let date = report.Date.getDate()
+                let dateStr = date  < 10 ?  "0" + date  : date 
+                response.Date.push(year + "/" + monthStr + "/" + dateStr)
+            })
+
+            return res.status(200).json(responseTemplate.successResponse(response)); 
+        }catch(err){
+            return res.json(responseTemplate.handlingErrorResponse(err));
         }
     }
        
