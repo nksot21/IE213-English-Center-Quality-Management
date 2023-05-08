@@ -19,7 +19,7 @@ export const createHomework = async (req, res, next) => {
             } = homework
 
             const student = await StudentSchema.findById(StudentID._id)
-            if (!student) res.json(Response.errorResponse(404, `Student with ID ${studentId} is not found`))
+            if (!student) res.json(Response.errorResponse(404, `Student with ID ${student.StudentID} is not found`))
 
             const homeworkData = {
                 StudentID: student._id,
