@@ -5,6 +5,9 @@ const route = express.Router()
 route.route("/").get(studentReportController.getStudentDailyReportAPI);
 route.route("/total").get(studentReportController.getStudentTotalReportAPI);
 route.route("/monthly/:studentid").get(studentReportController.getStudentMonthlyReportAPI)
+route.route("/monthly").get(studentReportController.getMonthlyReportAPI)
+
+route.route("/date/:studentid").get(studentReportController.getStudiedDateAPI);
 
 
 export default route
