@@ -1,6 +1,7 @@
 import express from 'express'
 import {
     createAttendance,
+    createAttendanceByScanning,
     deleteAttendance,
     getAttendances
 } from './attendance.controller.js'
@@ -20,6 +21,8 @@ statisticsRoute.route('/attendances/:classId')
     .post(createAttendance)
     .get(getAttendances)
     .delete(deleteAttendance)
+
+statisticsRoute.route("/attendances/:classId/scan").post(createAttendanceByScanning);
 
 statisticsRoute.route('/homework/:classId')
     .post(createHomework)
