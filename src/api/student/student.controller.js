@@ -3,7 +3,6 @@ import Response from "../helpers/response.js";
 import ClassSchema from "../model/class.schema.js";
 
 export default class StudentController {
-
   //---------getAllStudent--------------
 
   static async getAllStudent(req, res, next) {
@@ -14,7 +13,10 @@ export default class StudentController {
         query.TypeClass = req.query.typeClass;
       }
       if (req.query.classId) {
-        query.ClassID = req.query.classId;
+        const _class = await ClassSchema.findOne({
+          ClassID: req.query.classId,
+        });
+        query.ClassID = _class.id;
       }
       const students = await StudentSchema.find(query);
       if (!students) {
@@ -26,8 +28,7 @@ export default class StudentController {
     }
   }
 
-
-//---------getAllStudentById--------------
+  //---------getAllStudentById--------------
 
   static async getStudentById(req, res, next) {
     try {
@@ -36,72 +37,73 @@ export default class StudentController {
         throw "error";
       }
       return res.status(200).json(Response.successResponse(student));
-    } 
-    catch (error) {
+    } catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
 
-
-
-//-------------createStudent-------------
+  //-------------createStudent-------------
 
   static async createStudent(req, res) {
     try {
-        const students = await StudentSchema.find({});
-        let newStudentID;
-        if (students.length === 0) {
-            newStudentID = "STD0001";
-        } else {
-            const lastStudentID = students[students.length - 1].StudentID;
-            const lastStudentNum = parseInt(lastStudentID.slice(3), 10);
-            newStudentID = "STD" + ("000" + (lastStudentNum + 1)).slice(-4);
-        }
-        const newStudent = new StudentSchema({ ...req.body, StudentID: newStudentID });
-        const savedStudent = await newStudent.save();
-        return res.status(201).json(Response.successResponse(savedStudent));
+      const students = await StudentSchema.find({});
+      let newStudentID;
+      if (students.length === 0) {
+        newStudentID = "STD0001";
+      } else {
+        const lastStudentID = students[students.length - 1].StudentID;
+        const lastStudentNum = parseInt(lastStudentID.slice(3), 10);
+        newStudentID = "STD" + ("000" + (lastStudentNum + 1)).slice(-4);
+      }
+      const newStudent = new StudentSchema({
+        ...req.body,
+        StudentID: newStudentID,
+      });
+      const savedStudent = await newStudent.save();
+      return res.status(201).json(Response.successResponse(savedStudent));
     } catch (error) {
-        return res.json(Response.handlingErrorResponse(error));
+      return res.json(Response.handlingErrorResponse(error));
     }
-}
-
+  }
 
   //-------------updateStudent-------------
 
   static async updateStudent(req, res) {
-  try {
+    try {
       console.debug("Updating...");
       const { id } = req.params;
       const updatedStudent = await StudentSchema.findByIdAndUpdate(
-          id,
-          req.body,
-          { new: true }
+        id,
+        req.body,
+        { new: true }
       );
       if (!updatedStudent) {
-          return res.status(404).json(Response.errorResponse("Student not found"));
+        return res
+          .status(404)
+          .json(Response.errorResponse("Student not found"));
       }
       return res.json(Response.successResponse(updatedStudent));
-  } 
-  catch (error) {
+    } catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
 
+  //-------------deleteStudent-------------
 
-//-------------deleteStudent-------------
-
-static async deleteStudent(req, res) {
-  try {
-    const studentId = req.params.id; 
-    const deletedStudent = await StudentSchema.findByIdAndDelete(studentId); 
-    if (!deletedStudent) { 
-      return res.status(404).json(Response.errorResponse("Student not found"));
+  static async deleteStudent(req, res) {
+    try {
+      const studentId = req.params.id;
+      const deletedStudent = await StudentSchema.findByIdAndDelete(studentId);
+      if (!deletedStudent) {
+        return res
+          .status(404)
+          .json(Response.errorResponse("Student not found"));
+      }
+      return res
+        .status(200)
+        .json(Response.successResponse("Student deleted successfully"));
+    } catch (error) {
+      return res.json(Response.handlingErrorResponse(error));
     }
-    return res.status(200).json(Response.successResponse("Student deleted successfully"));
-  } 
-  catch (error) {
-    return res.json(Response.handlingErrorResponse(error));
   }
 }
-}
-
