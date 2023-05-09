@@ -72,7 +72,7 @@ function getReportResultMonthly(reports, totalReport){
     }else if(evalScore < 0.8 && evalScore > 0.5){
         evalStr = "Medium"
     }else if(evalScore < 0.5 && evalScore > 0){
-       evalStr = "Not-Good"
+       evalStr = "Not-good"
     }else{
         evalStr = "Non"
     }
@@ -126,7 +126,6 @@ async function getStudentReports({
     date = null
 } = {}){
     try{
-        console.log("year", year)
         const queries = {}
         if(classId)
             queries.ClassID = classId
@@ -178,56 +177,45 @@ export default class studentReportController {
         Date: new Date(date),
       };
 
-      const reportDb = await StudentReportSchema.findOne(reportData);
-      if (!reportDb) {
-        let student = await StudentSchema.findById(studentId);
-        // Create new report
-        let month = reportData.Date.getMonth() + 1;
-        // Get total Score
-        let totalScore = getTotalScore({ homeworkScore, testScore });
-        const newReport = await StudentReportSchema.create({
-          ...reportData,
-          Month: month,
-          Year: reportData.Date.getFullYear(),
-          Attendance: attendance,
-          HomeworkScore: homeworkScore,
-          TestScore: testScore,
-          TotalScore: totalScore,
-          HomeworkScoreRequired: homeworkScoreRequired,
-          TestScoreRequired: testScoreRequired,
-          ClassID: student.ClassID,
-        });
-        return newReport;
-      } else {
-        // Update report
-        let updateData = {
-          HomeworkScore:
-            homeworkScore === -1 ? reportDb.HomeworkScore : homeworkScore,
-          HomeworkScoreRequired:
-            homeworkScore === -1
-              ? reportDb.HomeworkScoreRequired
-              : homeworkScoreRequired,
-          TestScore: testScore === -1 ? reportDb.TestScore : testScore,
-          TestScoreRequired:
-            testScore === -1 ? reportDb.TestScoreRequired : testScoreRequired,
-          Attendance: !attendance ? reportDb.Attendance : attendance,
-        };
-
-        let newTotalScore = getTotalScore({
-          homeworkScore: updateData.HomeworkScore,
-          testScore: updateData.TestScore,
-        });
-        const updatedReport = await reportDb.updateOne({
-          ...updateData,
-          TotalScore: newTotalScore,
-        });
-        return updatedReport;
-      }
-    } catch (error) {
-      console.log(error);
-      return error.message;
+            const reportDb = await StudentReportSchema.findOne(reportData)
+            if(!reportDb){
+                let student = await StudentSchema.findById(studentId)
+                // Create new report
+                let month = reportData.Date.getMonth() + 1
+                // Get total Score
+                let totalScore = getTotalScore({homeworkScore, testScore})
+                const newReport = await StudentReportSchema.create({
+                    ...reportData,
+                    Month: month,
+                    Year: reportData.Date.getFullYear(),
+                    Attendance: attendance,
+                    HomeworkScore: homeworkScore,
+                    TestScore: testScore,
+                    TotalScore: totalScore,
+                    HomeworkScoreRequired: homeworkScoreRequired,
+                    TestScoreRequired: testScoreRequired,
+                    ClassID: student.ClassID
+                })
+                return newReport
+            }else{
+                // Update report
+                let updateData = {
+                    HomeworkScore: (homeworkScore === -1) ? reportDb.HomeworkScore : homeworkScore,
+                    HomeworkScoreRequired: (homeworkScore === -1) ? reportDb.HomeworkScoreRequired : homeworkScoreRequired,
+                    TestScore: (testScore === -1) ? reportDb.TestScore : testScore,
+                    TestScoreRequired: (testScore === -1) ? reportDb.TestScoreRequired : testScoreRequired,
+                    Attendance: (attendance === undefined) ? reportDb.Attendance : attendance
+                }
+                
+                let newTotalScore = getTotalScore({homeworkScore: updateData.HomeworkScore, testScore: updateData.TestScore})
+                const updatedReport = await reportDb.updateOne({...updateData, TotalScore: newTotalScore})
+                return updatedReport
+            }
+        }catch(error){
+            console.log(error)
+            return error.message
+        }
     }
-  }
 
   // Get Student Report inside Backend
   static async getStudentReports({
@@ -316,92 +304,225 @@ export default class studentReportController {
     }
   }
 
-  static async getStudentTotalReportAPI(req, res, next) {
-    try {
-      let students = await StudentSchema.find().catch((err) => {
-        throw err;
-      });
-      let reportResponses = [];
-      await Promise.all(
-        students.map(async (stu) => {
-          let reportResponse = await getStudentReportOverview(stu.StudentID);
-          reportResponses.push(reportResponse);
-        })
-      );
-      return res
-        .status(200)
-        .json(responseTemplate.successResponse(reportResponses));
-    } catch (error) {
-      return res.json(responseTemplate.handlingErrorResponse(error));
-    }
-  }
-
-  // Get Student Report API
-  static async getStudentDailyReportAPI(req, res, next) {
-    try {
-      const { studentid, month, year, date } = req.query;
-      console.log("query", req.query);
-      // student
-      let student = await StudentSchema.findById(studentid);
-      if (!student) {
-        throw "Student Not Found";
-      }
-      // report
-      let reportResponse = {
-        Student: student,
-      };
-      if (month && year) {
-        let reportDb = await getStudentReports({
-          studentId: student.id,
-          month: month,
-          year: year,
-        });
-        let totalReport = reportDb.count;
-        let reports = reportDb.reportsDb;
-        let monthlyResult = getReportResultMonthly(reports, totalReport);
-        reportResponse.Result = monthlyResult;
-        reportResponse.Reports = reports;
-      } else if (date) {
-        let currentDate = new Date(date);
-        let currentMonth = currentDate.getMonth() + 1;
-        // date-report
-        let dateReport = await getStudentReports({ date: currentDate });
-        if (!dateReport) {
-          throw "Report Not Found";
+    static async getMonthlyReportAPI(req, res, next) {
+        try{
+            const {
+              classid,   
+              month,
+              year  
+            } = req.query
+            let queryObj = {}
+            if(classid){
+                queryObj.ClassID = new mongoose.Types.ObjectId(classid)
+            }
+            if(month && year){
+                queryObj.Year = parseInt(year)
+                queryObj.Month = parseInt(month)
+                
+            }
+            
+            let reports = await StudentReportSchema.aggregate([
+                { $match: queryObj},
+                {
+                    $project: {
+                        Year: 1,
+                        Month: 1,
+                        StudentID: 1,
+                        TestScore: 1,
+                        HomeworkScore: 1,
+                        TotalScore: 1,
+                        HomeworkScoreRequired: 1,
+                        TestScoreRequired: 1,
+                        attended: {
+                            $cond: [{$eq: ["$Attendance", true]}, 1, 0]
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$StudentID',
+                        TotalReport: {$count: {}},
+                        AvgTestScore: {$avg: '$TestScore'},
+                        AvgHomeWorkScore: {$avg: '$HomeworkScore'},
+                        AvgTotalScore: {$avg: '$TotalScore'},
+                        TestScore: {$sum: '$TestScore'},
+                        HomeworkScore: {$sum: '$HomeworkScore'},
+                        TotalScore: {$sum: '$TotalScore'},
+                        HomeworkScoreRequired: {$sum: '$HomeworkScoreRequired'},
+                        TestScoreRequired: {$sum: '$TestScoreRequired'},
+                        Attendance: {$sum: "$attended"},
+                        Month: {$first: "$Month"},
+                        Year: {$first: '$Year'}
+                    },
+                    
+                },
+                {
+                    $sort: {_id: 1}
+                }
+                
+            ]).catch(err => {
+                console.log(err)
+            })
+            
+            let reportResponse = {
+                Reports: reports
+            }
+            return res.status(200).json(responseTemplate.successResponse(reportResponse))
+        
+        }catch(error){
+            console.log(error)
+            return res.json(responseTemplate.handlingErrorResponse(error));
         }
-        // month-report
-        let reportDb = await getStudentReports({
-          studentId: student.id,
-          month: currentMonth,
-          year: currentDate.getFullYear(),
-        });
-        reportResponse.Reports = reportDb.reportsDb;
-        reportResponse.Result = dateReport.reportsDb[0];
-      } else {
-      }
-
-      return res
-        .status(200)
-        .json(responseTemplate.successResponse(reportResponse));
-    } catch (error) {
-      return res.json(responseTemplate.handlingErrorResponse(error));
     }
-  }
 
-  //-------------Get top students-------
-  static async getTopStudent(req, res, next) {
-    try {
-        const students = await StudentReportSchema.find({})
-          .populate("StudentID")
-          .sort({ TotalScore: -1 })
-          .limit(5);
-         return res
-           .status(200)
-           .json(responseTemplate.successResponse(students));
-    } catch (error) {
-      return res.json(responseTemplate.handlingErrorResponse(error));
+    //
+    static async getStudentTotalReportAPI(req, res, next) {
+        try{
+            const {
+                istop  
+              } = req.query
+            console.log(req.query)
+            let query = {}
+            //Filter by typeClass
+            if (req.query.typeClass) {
+                query.TypeClass = req.query.typeClass;
+            }
+            if (req.query.classId) {
+                query.ClassID = req.query.classId;
+            }
+            let Evaluation = "";
+            if (req.query.evaluation) {
+                Evaluation = req.query.evaluation;
+            }
+            let students = await StudentSchema.find(query)
+            .catch(err => {
+                throw err
+            })
+
+            let reportResponses = []
+            await Promise.all(students.map(async (stu) => {
+                let reportResponse = await getStudentReportOverview(stu.StudentID);
+                if (Evaluation != "") {
+                    if (reportResponse.TotalResult.Evaluation == Evaluation) {
+                        reportResponses.push(reportResponse);
+                    };
+                }
+                else {
+                reportResponses.push(reportResponse);
+            }
+            }))
+            if(istop === 'true' && reportResponses.length !== 0){
+                const result = reportResponses.filter(report => report.TotalResult.TotalScore > 0)
+                result.sort((a, b) => b.TotalResult.AverageTotalScore - a.TotalResult.AverageTotalScore)
+                reportResponses = result.slice(0, (result.length < 5 ? result.length : 5 ))
+            }
+            return res.status(200).json(responseTemplate.successResponse(reportResponses)); 
+        }catch(error){
+            console.log(error)
+            return res.json(responseTemplate.handlingErrorResponse(error));
+        }
     }
-  }
+       
+    // Get Student Report API
+    static async getStudentDailyReportAPI(req, res, next) {
+        try{
+            const {
+                studentid,
+                month,
+                year,
+                date
+            } = req.query
+            console.log("query",req.query)
+            // student
+            let student = await StudentSchema.findById(studentid)
+            if(!student){
+                throw "Student Not Found"
+            }
+            // report
+            let reportResponse = {
+                Student: student
+            }
+            if(month && year){
+                let reportDb = await getStudentReports({studentId: student.id, month: month, year: year})
+                let totalReport = reportDb.count
+                let reports = reportDb.reportsDb
+                let monthlyResult = getReportResultMonthly(reports, totalReport)
+                reportResponse.Result = monthlyResult
+                reportResponse.Reports = reports
+            }else if(date){
+                let currentDate = new Date(date)
+                let currentMonth = currentDate.getMonth() + 1
+                // date-report
+                let dateReport = await getStudentReports({date: currentDate})
+                if(!dateReport){
+                    throw "Report Not Found"
+                }
+                // month-report
+                let reportDb = await getStudentReports({studentId: student.id, month: currentMonth, year: currentDate.getFullYear()})
+                reportResponse.Reports = reportDb.reportsDb
+                reportResponse.Result = dateReport.reportsDb[0]
+            }else{
+                
+            }
+
+            return res.status(200).json(responseTemplate.successResponse(reportResponse));
+        
+        }catch(error){
+            return res.json(responseTemplate.handlingErrorResponse(error));
+        }
+    }
+
+
+    // Get Studied Date / Month API
+    static async getStudiedDateAPI(req, res, next){
+        try{
+            const studentId = req.params.studentid
+            let response = {
+                Date: [],
+                Month: []
+            }
+           // Get Month
+            let reportMonths = await StudentReportSchema.aggregate([
+                { $match: {StudentID: new mongoose.Types.ObjectId(studentId)}},
+                {
+                    $group: {
+                        _id: {
+                            Year: "$Year",
+                            Month: "$Month"
+                        },
+                    },
+                    
+                },
+                {
+                    $sort: {_id: 1}
+                }
+            ]).catch(err => {
+                console.log(err)
+            })
+            reportMonths.map(month => {
+                let m = month._id.Month < 10 ?  "0" +  month._id.Month : month._id.Month
+                let str = m  + "/" + month._id.Year
+                response.Month.push(str)
+            })
+            // Get Date
+            let reportDates = await StudentReportSchema.find({
+                StudentID: studentId
+            }).sort({Date: 1})
+            reportDates.map(report => {
+                let year = report.Date.getFullYear() 
+                let month = report.Date.getMonth() + 1
+                let monthStr = month  < 10 ?  "0" + month  : month 
+                let date = report.Date.getDate()
+                let dateStr = date  < 10 ?  "0" + date  : date 
+                response.Date.push(year + "/" + monthStr + "/" + dateStr)
+            })
+
+            return res.status(200).json(responseTemplate.successResponse(response)); 
+        }catch(err){
+            return res.json(responseTemplate.handlingErrorResponse(err));
+        }
+    }
+       
 }
 
 

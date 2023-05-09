@@ -13,10 +13,7 @@ export default class StudentController {
         query.TypeClass = req.query.typeClass;
       }
       if (req.query.classId) {
-        const _class = await ClassSchema.findOne({
-          ClassID: req.query.classId,
-        });
-        query.ClassID = _class._id;
+        query.ClassID = req.query.classId;
       }
       const students = await StudentSchema.find(query);
       if (!students) {

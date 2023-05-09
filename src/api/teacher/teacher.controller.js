@@ -56,9 +56,8 @@ export default class TeacherController {
   static async updateTeacher(req, res) {
     try {
       console.debug("Updating teacher...");
-      const { id } = req.params;
       const updatedTaecher = await TeacherSchema.findByIdAndUpdate(
-        id,
+       {_id:req.params.id},
         req.body,
         { new: true }
       );
@@ -76,8 +75,7 @@ export default class TeacherController {
   static async deleteTeacher(req, res) {
     try {
       console.debug("Deleting Teacher...");
-      const { id } = req.params;
-      const deletedTeacher = await TeacherSchema.findOneAndDelete(id);
+      const deletedTeacher = await TeacherSchema.findOneAndDelete({_id:req.params.id});
       if (!deletedTeacher) {
         return res
           .status(404)

@@ -19,7 +19,7 @@ export const createHomework = async (req, res, next) => {
             } = homework
 
             const student = await StudentSchema.findById(StudentID._id)
-            if (!student) res.json(Response.errorResponse(404, `Student with ID ${studentId} is not found`))
+            if (!student) res.json(Response.errorResponse(404, `Student with ID ${student.StudentID} is not found`))
 
             const homeworkData = {
                 StudentID: student._id,
@@ -66,6 +66,10 @@ export const getHomeworks = async (req, res, next) => {
         ClassID: classId
     })
 
+    if (!_class) {
+        return res.json(Response.errorResponse(404, "Class not found!"))
+    }
+
     const homeworks = await StudentHomeworkSchema.find({
             ClassID: _class._id
         })
@@ -87,9 +91,9 @@ export const deleteHomework = async (req, res, next) => {
         ClassID: classId
     })
 
-    await StudentHomeworkSchema.deleteOne({
-        ClassID: _class.id,
-        Date: new Date(date)
+    await StudentHomeworkSchema.deleteMany({
+        ClassID: _class._id,
+        Date: date
     })
 
     return res.json(Response.successResponse())
