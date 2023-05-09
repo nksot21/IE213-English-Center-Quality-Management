@@ -147,4 +147,28 @@ export default class classReportController {
       return res.json(responseTemplate.handlingErrorResponse(error));
     }
   }
+
+  static async getCenterDated(req, res, next){
+    try{
+      const classDate = await TotalReportSchema.find({}, { Date: 1 });
+      const response = {}
+      let months = []
+      let dates =[]
+      classDate.forEach(item => {
+        const date = item["Date"]
+        dates.push(date)
+        const month = date.getMonth() + 1; // Lấy tháng (trả về giá trị từ 0 đến 11, nên cần cộng thêm 1 để lấy tháng từ 1 đến 12)
+        const year = date.getFullYear(); // Lấy năm
+        const monthString = `${month}-${year}`
+        if(!months.includes(monthString))
+          months.push(monthString)
+      })
+      
+      response.months = months
+      response.dates = dates
+      return res.status(200).json(responseTemplate.successResponse(response));
+    }catch(e){
+      return res.json(responseTemplate.handlingErrorResponse(e));
+    }
+  }
 }
