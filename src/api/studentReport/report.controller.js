@@ -379,7 +379,8 @@ export default class studentReportController {
     static async getStudentTotalReportAPI(req, res, next) {
         try{
             const {
-                istop  
+                istop,
+                classid
               } = req.query
             console.log(req.query)
             let query = {}
@@ -387,8 +388,11 @@ export default class studentReportController {
             if (req.query.typeClass) {
                 query.TypeClass = req.query.typeClass;
             }
-            if (req.query.classId) {
-                query.ClassID = req.query.classId;
+            // if (req.query.classId) {
+            //     query.ClassID = req.query.classId;
+            // }
+            if(classid){
+                query.ClassID = classid
             }
             let Evaluation = "";
             if (req.query.evaluation) {
