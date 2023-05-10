@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import responseTemplate from "../helpers/response.js";
 import StudentReportSchema from "../model/student-report.schema.js"
 import StudentSchema from "../model/student.schema.js"
+import ClassSchema from '../model/class.schema.js'
 
 function getTotalScore ({ homeworkScore, testScore} = {}) {
     
@@ -392,7 +393,8 @@ export default class studentReportController {
             //     query.ClassID = req.query.classId;
             // }
             if(classid){
-                query.ClassID = classid
+                let classDB = await ClassSchema.findOne({ClassID: classid})
+                query.ClassID = classDB._id
             }
             let Evaluation = "";
             if (req.query.evaluation) {
