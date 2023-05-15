@@ -1,10 +1,16 @@
 import TeacherSchema from "../model/teacher.schema.js";
 import Response from "../helpers/response.js";
+import ClassSchema from "../model/class.schema.js";
 
 export default class TeacherController {
   //Lấy danh sách giáo viên:
   static async getTeachers(req, res, next) {
     try {
+      const Type = req.query.classType;
+
+      if (Type) {
+        query.Type = Type;
+      }
       const teacher = await TeacherSchema.find();
       if (!teacher) {
         throw "error";
@@ -28,36 +34,36 @@ export default class TeacherController {
     }
   }
 
-
   //Thêm giáo viên
 
   static async addTeacher(req, res) {
     try {
-        const teachers = await TeacherSchema.find({});
-        let newTeacherID;
-        if (teachers.length === 0) {
-            newTeacherID = "TEA0001";
-        } else {
-            const lastTeacherID = teachers[teachers.length - 1].TeacherID;
-            const lastTeacherNum = parseInt(lastTeacherID.slice(3), 10);
-            newTeacherID = "TEA" + ("000" + (lastTeacherNum + 1)).slice(-4);
-        }
-        const newTeacher = new TeacherSchema({ ...req.body, TeacherID: newTeacherID });
-        const savedTeacher = await newTeacher.save();
-        return res.status(201).json(Response.successResponse(savedTeacher));
+      const teachers = await TeacherSchema.find({});
+      let newTeacherID;
+      if (teachers.length === 0) {
+        newTeacherID = "TEA0001";
+      } else {
+        const lastTeacherID = teachers[teachers.length - 1].TeacherID;
+        const lastTeacherNum = parseInt(lastTeacherID.slice(3), 10);
+        newTeacherID = "TEA" + ("000" + (lastTeacherNum + 1)).slice(-4);
+      }
+      const newTeacher = new TeacherSchema({
+        ...req.body,
+        TeacherID: newTeacherID,
+      });
+      const savedTeacher = await newTeacher.save();
+      return res.status(201).json(Response.successResponse(savedTeacher));
     } catch (error) {
-        return res.json(Response.handlingErrorResponse(error));
+      return res.json(Response.handlingErrorResponse(error));
     }
-}
-
-
+  }
 
   //Cập nhật thông tin giáo viên:
   static async updateTeacher(req, res) {
     try {
       console.debug("Updating teacher...");
       const updatedTaecher = await TeacherSchema.findByIdAndUpdate(
-       {_id:req.params.id},
+        { _id: req.params.id },
         req.body,
         { new: true }
       );
@@ -75,13 +81,15 @@ export default class TeacherController {
   static async deleteTeacher(req, res) {
     try {
       console.debug("Deleting Teacher...");
-      const deletedTeacher = await TeacherSchema.findOneAndDelete({_id:req.params.id});
+      const deletedTeacher = await TeacherSchema.findOneAndDelete({
+        _id: req.params.id,
+      });
       if (!deletedTeacher) {
         return res
           .status(404)
           .json(Response.errorResponse("Teacher not found."));
       }
-      return res.json(Response.successResponse('Teacher deleted successfully'));
+      return res.json(Response.successResponse("Teacher deleted successfully"));
     } catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
