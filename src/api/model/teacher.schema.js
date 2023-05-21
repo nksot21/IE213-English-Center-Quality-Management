@@ -25,6 +25,10 @@ const schema = new mongoose.Schema({
   ImageURL: String,
   Certificate: String,
   Score: String,
+  class: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Class", // Tham chiếu tới model của lớp
+  },
 });
 
 schema.pre("save", function (next) {

@@ -3,7 +3,7 @@ import TeacherController from "./teacher.controller.js";
 
 const router = express.Router();
 
-router.route("/").get(TeacherController.getTeachers);
+router.route("/").get(TeacherController.getAllTeacher);
 router.route("/").post(TeacherController.addTeacher);
 router.get("/:id", TeacherController.getTeacherById);
 router.put("/:id", TeacherController.updateTeacher);

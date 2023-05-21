@@ -4,18 +4,15 @@ import ClassSchema from "../model/class.schema.js";
 
 export default class TeacherController {
   //Lấy danh sách giáo viên:
-  static async getTeachers(req, res, next) {
+  static async getAllTeacher(req, res, next) {
     try {
-      const Type = req.query.classType;
-
-      if (Type) {
-        query.Type = Type;
-      }
-      const teacher = await TeacherSchema.find();
-      if (!teacher) {
+      const { Certificate } = req.query;
+      const teachers = await fetchTeachersByCertificate(Certificate);
+      // const teacher = await TeacherSchema.find().populate("class", "name");
+      if (!teachers) {
         throw "error";
       }
-      return res.status(200).json(Response.successResponse(teacher));
+      return res.status(200).json(Response.successResponse(teachers));
     } catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
@@ -94,4 +91,18 @@ export default class TeacherController {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
+}
+
+// Function to fetch teachers by Certificate
+async function fetchTeachersByCertificate(Certificate) {
+  let query = {};
+
+  if (Certificate) {
+    query.Certificate = Certificate;
+  }
+
+  // Perform query using Teacher model
+  const teachers = await TeacherSchema.find(query);
+
+  return teachers;
 }
