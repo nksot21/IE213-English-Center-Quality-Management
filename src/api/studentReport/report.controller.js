@@ -389,9 +389,9 @@ export default class studentReportController {
             if (req.query.typeClass) {
                 query.TypeClass = req.query.typeClass;
             }
-            // if (req.query.classId) {
-            //     query.ClassID = req.query.classId;
-            // }
+            if (req.query.classId) {
+                query.ClassID = req.query.classId;
+            }
             if(classid){
                 let classDB = await ClassSchema.findOne({ClassID: classid})
                 query.ClassID = classDB._id
