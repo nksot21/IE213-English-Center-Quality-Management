@@ -13,7 +13,10 @@ export default class StudentController {
         query.TypeClass = req.query.typeClass;
       }
       if (req.query.classId) {
-        query.ClassID = req.query.classId;
+        const _class = await ClassSchema.findOne({
+          ClassID: req.query.classId,
+        });
+        query.ClassID = _class.id;
       }
       const students = await StudentSchema.find(query);
       if (!students) {
@@ -46,6 +49,7 @@ export default class StudentController {
     try {
       const students = await StudentSchema.find({});
       let newStudentID;
+      const {ClassID} = req.body
       if (students.length === 0) {
         newStudentID = "STD0001";
       } else {
@@ -53,10 +57,15 @@ export default class StudentController {
         const lastStudentNum = parseInt(lastStudentID.slice(3), 10);
         newStudentID = "STD" + ("000" + (lastStudentNum + 1)).slice(-4);
       }
+      const _class = await ClassSchema.findOne({ClassID})
       const newStudent = new StudentSchema({
         ...req.body,
+        ClassID: _class.id,
         StudentID: newStudentID,
       });
+      if (!_class) {}
+      await ClassSchema.findByIdAndUpdate(_class.id, {NumberOfStudent: _class.NumberOfStudent + 1})
+
       const savedStudent = await newStudent.save();
       return res.status(201).json(Response.successResponse(savedStudent));
     } catch (error) {
@@ -93,14 +102,16 @@ export default class StudentController {
       const studentId = req.params.id;
       const deletedStudent = await StudentSchema.findByIdAndDelete(studentId);
       if (!deletedStudent) {
-        return res
-          .status(404)
-          .json(Response.errorResponse("Student not found"));
+        return res.status(404).json(Response.errorResponse("Student not found"));
       }
-      return res
-        .status(200)
-        .json(Response.successResponse("Student deleted successfully"));
-    } catch (error) {
+      const {ClassID} = deletedStudent;
+      console.log(ClassID); 
+      const _class = await ClassSchema.findOne({ClassID});
+      await ClassSchema.findByIdAndUpdate(_class.id, {NumberOfStudent: _class.NumberOfStudent - 1});
+      
+      return res.status(200).json(Response.successResponse("Student deleted successfully"));
+    } 
+    catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
   }

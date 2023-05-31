@@ -63,7 +63,7 @@ export default class ClassesController {
           }
           const classes = await ClassSchema.find(query);
           if (!classes) {
-              throw "error";
+              throw "error";  
           }
           return res.status(200).json(Response.successResponse(classes));
       }
