@@ -60,11 +60,11 @@ export default class StudentController {
       const _class = await ClassSchema.findOne({ClassID})
       const newStudent = new StudentSchema({
         ...req.body,
-        ClassID: _class.id,
+        ClassID: _class._id,
         StudentID: newStudentID,
       });
       if (!_class) {}
-      await ClassSchema.findByIdAndUpdate(_class.id, {NumberOfStudent: _class.NumberOfStudent + 1})
+      await ClassSchema.findByIdAndUpdate(_class._id, {NumberOfStudent: _class.NumberOfStudent + 1})
 
       const savedStudent = await newStudent.save();
       return res.status(201).json(Response.successResponse(savedStudent));
