@@ -117,6 +117,77 @@ async function getStudentReportOverview(studentId){
     }
 }
 
+async function getStudentReportOverviewByClass(classId) {
+    try {
+      let students = await StudentSchema.find({ NameClass: classId })
+        .catch(err => {
+          throw err;
+        });
+  
+      let result = [];
+      for (let student of students) {
+        let reports = await getStudentReportsByClassID({ studentId: student.id })
+          .catch(err => {
+            console.log(err);
+            throw err;
+          });
+  
+        result.push({
+          Student: student,
+          TotalResult: getReportResultMonthly(reports.reportsDb, reports.count)
+        });
+      }
+  
+      return result;
+    } 
+    catch (err) {
+      return null;
+    }
+}
+// Get Student ReportByClassID 
+async function getStudentReportsByClassID({
+    classId = null,
+    studentId = null,
+    month = null,
+    year = null,
+    date = null
+} = {}){
+    try{
+        const queries = {}
+        if(classId){
+            let classDB = await ClassSchema.findOne({ ClassID: classId });
+            if (!classDB) {
+                throw new Error("Class not found.");
+            }
+            queries.NameClass = classDB.ClassID;
+         }
+
+        if(studentId)
+            queries.StudentID = studentId
+        if(month && year){
+            queries.Month = month
+            queries.Year = year
+        }
+        if(date){
+            let nextDay = new Date(date)
+            nextDay.setDate(date.getDate() + 1)
+            queries.Date = date
+        }
+            
+        const reportsDb = await StudentReportSchema.find(queries)
+        .catch(err => {
+            console.log(err)
+        })
+        if (!reportsDb) {
+            throw new Error("Cannot get report");
+        }
+        return {reportsDb, count: reportsDb.length}
+    }catch(error){
+        console.log(error)
+        return error.message
+    }
+}
+
 
 // Get Student Report 
 async function getStudentReports({
@@ -129,7 +200,7 @@ async function getStudentReports({
     try{
         const queries = {}
         if(classId)
-            queries.ClassID = classId
+            queries.ClassID = classId;
         if(studentId)
             queries.StudentID = studentId
         if(month && year){
@@ -155,6 +226,7 @@ async function getStudentReports({
         return error.message
     }
 }
+
 
 
 // Create or Update Report
@@ -428,6 +500,61 @@ export default class studentReportController {
             return res.json(responseTemplate.handlingErrorResponse(error));
         }
     }
+
+    static async getStudentTotalReportAPIByClassID(req, res, next) {
+        try{
+            const {istop} = req.query
+            const classId = req.params.classId; // Lấy classId từ params
+
+            console.log(req.query)
+            let query = {}
+            //Filter by typeClass
+            if (req.query.typeClass) {
+                query.TypeClass = req.query.typeClass;
+            }
+          
+            if (classId) {
+                const classDB = await ClassSchema.findOne({ ClassID: classId });
+                if (classDB) {
+                  query.NameClass = classDB.ClassID;
+                } else {
+                  return res.status(404).json(responseTemplate.errorResponse("Class not found."));
+                }
+            }
+            let Evaluation = "";
+            if (req.query.evaluation) {
+                Evaluation = req.query.evaluation;
+            }
+            let students = await StudentSchema.find(query)
+            .catch(err => {
+                throw err
+            })
+
+            let reportResponses = []
+            await Promise.all(students.map(async (stu) => {
+                let reportResponse = await getStudentReportOverview(stu.StudentID);
+                if (Evaluation != "") {
+                    if (reportResponse.TotalResult.Evaluation == Evaluation) {
+                        reportResponses.push(reportResponse);
+                    };
+                }
+                else {
+                reportResponses.push(reportResponse);
+            }
+            }))
+            if(istop === 'true' && reportResponses.length !== 0){
+                const result = reportResponses.filter(report => report.TotalResult.TotalScore > 0)
+                result.sort((a, b) => b.TotalResult.AverageTotalScore - a.TotalResult.AverageTotalScore)
+                reportResponses = result.slice(0, (result.length < 5 ? result.length : 5 ))
+            }
+            return res.status(200).json(responseTemplate.successResponse(reportResponses)); 
+        }catch(error){
+            console.log(error)
+            return res.json(responseTemplate.handlingErrorResponse(error));
+        }
+      }
+      
+    
        
     // Get Student Report API
     static async getStudentDailyReportAPI(req, res, next) {
