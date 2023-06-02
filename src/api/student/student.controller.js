@@ -27,7 +27,23 @@ export default class StudentController {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
+
+  //---------getStudentByClassID--------------
   
+  static async getStudentsByClass(req, res, next) {
+    try {
+      const classId = req.params.classId;
+      const students = await StudentSchema.find({ NameClass: classId });
+      if (!students) {
+        throw "error";
+      }
+      return res.status(200).json(students);
+    } 
+    catch (error) {
+      return res.json({ error: "An error occurred" });
+    }
+  }
+
 
   //---------getAllStudentById--------------
 
