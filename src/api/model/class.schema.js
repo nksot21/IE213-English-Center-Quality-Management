@@ -20,6 +20,11 @@ const schema = new mongoose.Schema({
         require: true 
     },
     TeacherName: String,
+    NumberOfStudent: {
+        type: Number,
+        default:0,
+        min: 0
+    },
     TeacherID: {
         type: mongoose.Schema.Types.ObjectId,
         ref:"TeacherID",
