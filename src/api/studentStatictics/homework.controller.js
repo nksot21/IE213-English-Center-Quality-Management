@@ -36,7 +36,7 @@ export const createHomework = async (req, res, next) => {
                     ClassID: student.ClassID
                 })
                 await studentReportController.createStudentReport({
-                    Date,
+                    date: Date,
                     homeworkScore: Score,
                     studentId: studentIdTemp
                 })
@@ -47,7 +47,7 @@ export const createHomework = async (req, res, next) => {
                     ClassID: student.ClassID
                 })
                 await studentReportController.createStudentReport({
-                    Date,
+                    date: Date,
                     homeworkScore: Score,
                     studentId: studentIdTemp
                 })
