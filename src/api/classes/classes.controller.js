@@ -35,8 +35,21 @@ export default class ClassesController {
     //         return res.json(Response.handlingErrorResponse(error));
     //     }
     // }
-
-
+    //------getAllClassesByTeacherID------
+    static async getClassesByTeacherId(req, res, next) {
+      try {
+        const teacherId = req.params.teacherId;
+        const classes = await ClassSchema.find({ TeacherID: teacherId });
+  
+        if (!classes) {
+          throw "error";
+        }
+  
+        return res.status(200).json(Response.successResponse(classes));
+      } catch (error) {
+        return res.json(Response.handlingErrorResponse(error));
+      }
+    }
     
     //-------getAllClasses--------
     static async getAllClasses(req, res, next) {
