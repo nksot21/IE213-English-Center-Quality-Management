@@ -22,6 +22,9 @@ const schema = new mongoose.Schema({
   PhoneNumber: {
     type: String,
   },
+  Password: {
+    type: String,
+  },
   ImageURL: String,
   Certificate: String,
   Score: String,
