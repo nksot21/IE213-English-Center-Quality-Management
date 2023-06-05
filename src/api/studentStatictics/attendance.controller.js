@@ -3,6 +3,7 @@ import Response from "../helpers/response.js";
 import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import studentReportController from "../studentReport/report.controller.js";
+import { createUpdateClassReport } from "../classReport/classReport.controller.js";
 
 export const createAttendance = async (req, res, next) => {
   const attendancesReq = req.body.attendances;
@@ -51,6 +52,8 @@ export const createAttendance = async (req, res, next) => {
         studentId: tempId,
       });
       attendancesRes.push(report);
+      //create or update class report
+      await createUpdateClassReport(student.ClassID, Date);
     })
   );
 
@@ -92,6 +95,7 @@ export const createAttendanceByScanning = async (req, res, next) => {
     })
   );
 
+  //create update student report
   await Promise.all(
     absentStudents.map(async (student) => {
       let tempId = student.id;

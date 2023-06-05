@@ -73,7 +73,7 @@ async function getClassReports({
 }
 
 //call in backend
-async function createUpdateReport(classId, date) {
+export async function createUpdateClassReport(classId, date) {
   try {
     if (!date || !classId) {
       throw "Date and ClassId are needed to create report!";
@@ -112,6 +112,9 @@ async function createUpdateReport(classId, date) {
     return error.message;
   }
 }
+
+
+
 export default class classReportController {
   static async getClassReportDailyApi(req, res, next) {
     try {
@@ -142,7 +145,7 @@ export default class classReportController {
   static async createUpdateReportApi(req, res, next) {
     try {
       const { date, classId } = req.body;
-      const result = await createUpdateReport(classId, date);
+      const result = await createUpdateClassReport(classId, date);
       console.log("result:", result);
       res.status(200).json(responseTemplate.successResponse(result));
     } catch (e) {
