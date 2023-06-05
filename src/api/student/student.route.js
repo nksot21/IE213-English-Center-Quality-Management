@@ -4,6 +4,7 @@ const studentRouter = express.Router()
 
 studentRouter.route("/").get(StudentController.getAllStudent);
 studentRouter.route("/").post(StudentController.createStudent);
+studentRouter.route("/class/:classId").get(StudentController.getStudentsByClass);
 // studentRouter.route("/").post(StudentController.validateCreateStudent, StudentController.createStudent);
 
 studentRouter.get("/:id", StudentController.getStudentById);

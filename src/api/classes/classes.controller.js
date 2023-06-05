@@ -72,7 +72,25 @@ export default class ClassesController {
       }
   }
   
-
+  //find class for search
+  static async findClasses(req, res, next) {
+    try {
+      const query = req.query.query;
+  
+      const classes = await ClassSchema.find({
+        $or: [
+          { TeacherName: { $regex: query, $options: "i" } },
+          { ClassID: { $regex: query, $options: "i" } }
+        ]
+      });
+  
+      return res.status(200).json(Response.successResponse(classes));
+    } 
+    catch (error) {
+      return res.json(Response.handlingErrorResponse(error));
+    }
+  }
+  
   //---------getClassesById---------
   static async getClassesById(req, res, next) {
     try {
@@ -81,11 +99,27 @@ export default class ClassesController {
         throw "error";
       }
       return res.status(200).json(Response.successResponse(classes));
-    } catch (error) {
+    } 
+    catch (error) {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
 
+  //---------getClassesByTeacherID---------
+
+  static async getClassesByTeacherID(req, res, next) {
+    try {
+      const classes = await ClassSchema.find({ TeacherID: req.params.id });
+      if (!classes) {
+        throw "error";
+      }
+      return res.status(200).json(Response.successResponse(classes));
+    } 
+    catch (error) {
+      return res.json(Response.handlingErrorResponse(error));
+    }
+  }
+  
   //-----------createClasses------------
 
     static async createClasses(req, res) {

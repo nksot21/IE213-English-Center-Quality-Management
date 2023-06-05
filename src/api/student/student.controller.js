@@ -27,7 +27,23 @@ export default class StudentController {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
+
+  //---------getStudentByClassID--------------
   
+  static async getStudentsByClass(req, res, next) {
+    try {
+      const classId = req.params.classId;
+      const students = await StudentSchema.find({ NameClass: classId });
+      if (!students) {
+        throw "error";
+      }
+      return res.status(200).json(students);
+    } 
+    catch (error) {
+      return res.json({ error: "An error occurred" });
+    }
+  }
+
 
   //---------getAllStudentById--------------
 
@@ -60,11 +76,11 @@ export default class StudentController {
       const _class = await ClassSchema.findOne({ClassID})
       const newStudent = new StudentSchema({
         ...req.body,
-        ClassID: _class.id,
+        ClassID: _class._id,
         StudentID: newStudentID,
       });
       if (!_class) {}
-      await ClassSchema.findByIdAndUpdate(_class.id, {NumberOfStudent: _class.NumberOfStudent + 1})
+      await ClassSchema.findByIdAndUpdate(_class._id, {NumberOfStudent: _class.NumberOfStudent + 1})
 
       const savedStudent = await newStudent.save();
       return res.status(201).json(Response.successResponse(savedStudent));
