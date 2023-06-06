@@ -4,56 +4,62 @@ import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import TestSchema from "../model/test.schema.js";
 import studentReportController from "../studentReport/report.controller.js";
+import { createUpdateClassReport } from "../classReport/classReport.controller.js";
+import { createUpdateCenterReport } from "../centerReport/centerReport.controller.js";
 
 export const createTest = async (req, res, next) => {
     const testsReq = req.body.tests
     console.log(testsReq)
     let testsRes = []
+    for( let i = 0; i < testsReq.length; i++){
+      const { Score, TestID, StudentID, Date } = testsReq[i];
 
-    await Promise.all(
-        testsReq.map(async test => {
-            const {
-                Score,
-                TestID,
-                StudentID,
-                Date
-            } = test
+      const student = await StudentSchema.findById(StudentID._id);
+      if (!student)
+        res.json(
+          Response.errorResponse(
+            404,
+            `Student with ID ${StudentID.StudentID} is not found`
+          )
+        );
 
-            const student = await StudentSchema.findById(StudentID._id)
-            if (!student) res.json(Response.errorResponse(404, `Student with ID ${StudentID.StudentID} is not found`))
-
-            const testData = {
-                StudentID: student._id,
-                Date: Date,
-                TestID: TestID._id,
-            }
-            let studentIdTemp = student._id
-            const existedTest = await StudentTestSchema.findOne(testData)
-            if (!existedTest) {
-                const newTest = await StudentTestSchema.create({
-                    ...testData,
-                    Score: Score,
-                    ClassID: student.ClassID
-                })
-                await studentReportController.createStudentReport({
-                    date: Date,
-                    testScore: Score,
-                    studentId: studentIdTemp
-                })
-                testsRes.push(newTest)
-            } else {
-                const updatedTest = await StudentTestSchema.updateOne(testData, {
-                    Score: Score,
-                    ClassID: student.ClassID
-                })
-                await studentReportController.createStudentReport({
-                    date: Date,
-                    testScore: Score,
-                    studentId: studentIdTemp
-                })
-                testsRes.push(updatedTest)
-            }
-        }))
+      const testData = {
+        StudentID: student._id,
+        Date: Date,
+        TestID: TestID._id,
+      };
+      let studentIdTemp = student._id;
+      const existedTest = await StudentTestSchema.findOne(testData);
+      if (!existedTest) {
+        const newTest = await StudentTestSchema.create({
+          ...testData,
+          Score: Score,
+          ClassID: student.ClassID,
+        });
+        await studentReportController.createStudentReport({
+          date: Date,
+          testScore: Score,
+          studentId: studentIdTemp,
+        });
+        testsRes.push(newTest);
+      } else {
+        const updatedTest = await StudentTestSchema.updateOne(testData, {
+          Score: Score,
+          ClassID: student.ClassID,
+        });
+        await studentReportController.createStudentReport({
+          date: Date,
+          testScore: Score,
+          studentId: studentIdTemp,
+        });
+        testsRes.push(updatedTest);
+      }
+      //create and update class report
+      await createUpdateClassReport(student.ClassID, Date);
+      //create and update center report
+      await createUpdateCenterReport(Date);
+    }
+    
     return res.json(Response.successResponse(testsRes))
 }
 

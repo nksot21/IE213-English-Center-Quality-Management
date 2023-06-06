@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 //get number information of a class
 const getClassLevel = async (reportData) => {
   const studentsReports = await StudentReports.find(reportData);
-  console.log("student report:", studentsReports);
+  //console.log("student report:", studentsReports);
   let goodLevel = 0;
   let mediumLevel = 0;
   let badLevel = 0;
@@ -84,13 +84,16 @@ export async function createUpdateClassReport(classId, date) {
       ClassID: classId,
       Date: new Date(date),
     };
+    console.log("reportData: ", reportData);
     const reportDb = await ClassReportSchema.findOne(reportData);
+
+    console.log("report check:", reportDb);
 
     //recaculate classNumberLevel
     const resultCaculate = await getClassLevel(reportData);
 
     if (!reportDb) {
-      console.log("dont have report");
+      console.log("dont have report")
       //create new report
       let month = reportData.Date.getMonth() + 1;
       let year = reportData.Date.getFullYear();

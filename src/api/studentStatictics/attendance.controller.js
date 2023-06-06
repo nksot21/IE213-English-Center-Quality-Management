@@ -4,18 +4,16 @@ import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import studentReportController from "../studentReport/report.controller.js";
 import { createUpdateClassReport } from "../classReport/classReport.controller.js";
+import { createUpdateCenterReport } from "../centerReport/centerReport.controller.js";
 
 export const createAttendance = async (req, res, next) => {
   const attendancesReq = req.body.attendances;
   let attendancesRes = [];
 
-  await Promise.all(
-    attendancesReq.map(async (attendance) => {
-      const { Attendance, StudentID, Date } = attendance;
+    for(let i = 0; i < attendancesReq.length; i++){
+      const { Attendance, StudentID, Date } = attendancesReq[i];
       // Assume variabels are not undefined
-
       const student = await StudentSchema.findById(StudentID._id);
-
       if (!student)
         res.json(
           Response.errorResponse(
@@ -52,10 +50,12 @@ export const createAttendance = async (req, res, next) => {
         studentId: tempId,
       });
       attendancesRes.push(report);
+
       //create or update class report
       await createUpdateClassReport(student.ClassID, Date);
-    })
-  );
+      //create and update center report
+      await createUpdateCenterReport(Date);
+    }
 
   return res.json(Response.successResponse(attendancesRes));
 };
