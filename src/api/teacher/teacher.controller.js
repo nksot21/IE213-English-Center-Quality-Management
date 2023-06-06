@@ -24,8 +24,7 @@ export default class TeacherController {
   //Lấy giáo viên theo id:
   static async getTeacherById(req, res, next) {
     try {
-      const { id } = req.params;
-      const teacher = await TeacherSchema.findById(id);
+      const teacher = await TeacherSchema.findById(req.params.id);
       if (!teacher) {
         throw "error";
       }
@@ -39,6 +38,7 @@ export default class TeacherController {
 
   static async addTeacher(req, res) {
     try {
+      console.debug("Creating Teacher...");
       const teachers = await TeacherSchema.find({});
       let newTeacherID;
       if (teachers.length === 0) {
