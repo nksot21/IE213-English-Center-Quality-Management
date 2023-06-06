@@ -36,17 +36,16 @@ export default class ClassesController {
     //     }
     // }
     //------getAllClassesByTeacherID------
-    static async getClassesByTeacherId(req, res, next) {
+
+    static async getClassesByTeacherID(req, res, next) {
       try {
-        const teacherId = req.params.teacherId;
-        const classes = await ClassSchema.find({ TeacherID: teacherId });
-  
+        const classes = await ClassSchema.find({ TeacherID: req.params.id });
         if (!classes) {
           throw "error";
         }
-  
         return res.status(200).json(Response.successResponse(classes));
-      } catch (error) {
+      } 
+      catch (error) {
         return res.json(Response.handlingErrorResponse(error));
       }
     }
