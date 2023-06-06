@@ -203,4 +203,19 @@ export default class ClassesController {
           return res.json(Response.handlingErrorResponse(error));
         }
       }
+
+    static async getClassInfoByClass(req, res){
+       try {
+          console.log("class id " + req.params.id)
+         const classInfo = await ClassSchema.findOne({
+           ClassID: req.params.id,
+         });
+         if (!classInfo) {
+           throw "class does not exist";
+         }
+         return res.status(200).json(Response.successResponse(classInfo));
+       } catch (error) {
+         return res.json(Response.handlingErrorResponse(error));
+       }
+    }
 }

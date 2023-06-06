@@ -6,6 +6,8 @@ const route = express.Router();
 route.route("/").get(classReportController.getClassReportDailyApi);
 route.route("/monthly").get(classReportController.getClassReportMonthlyApi);
 route.route("/").post(classReportController.createUpdateReportApi);
-route.route("/date").get(classReportController.getClassDated);
+route.route("/:id/date").get(classReportController.getClassDated);
+
+
 
 export default route;

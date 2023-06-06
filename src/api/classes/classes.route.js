@@ -32,8 +32,10 @@ classRoute.route('/:classId/tests')
     .get(getTests)
     .delete(deleteTest)
 
+
 classRoute.route("/").get(ClassesController.getAllClasses);
 classRoute.route("/find").get(ClassesController.findClasses);
+classRoute.route("/get-class-info/:id").get(ClassesController.getClassInfoByClass);
 classRoute.route("/").post(ClassesController.createClasses);
 classRoute.get("/:id", ClassesController.getClassesById);
 classRoute.get("/tc", ClassesController.getClassesByTeacherId);

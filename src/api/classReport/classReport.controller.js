@@ -4,6 +4,7 @@ import StudentSchema from "../model/student.schema.js";
 import ClassSchema from "../model/class.schema.js";
 import responseTemplate from "../helpers/response.js";
 import mongoose from "mongoose";
+import { ObjectId } from "mongodb";
 
 //get number information of a class
 const getClassLevel = async (reportData) => {
@@ -93,7 +94,7 @@ export async function createUpdateClassReport(classId, date) {
     const resultCaculate = await getClassLevel(reportData);
 
     if (!reportDb) {
-      console.log("dont have report")
+      console.log("dont have report");
       //create new report
       let month = reportData.Date.getMonth() + 1;
       let year = reportData.Date.getFullYear();
@@ -116,27 +117,22 @@ export async function createUpdateClassReport(classId, date) {
   }
 }
 
-
-
 export default class classReportController {
   static async getClassReportDailyApi(req, res, next) {
     try {
+      console.log("get data by date");
       const { classId, month, year, date } = req.query;
       console.log("here:", classId, month, year, date);
-      
-      let reportResponse = {
-      };
 
-      if (month) {
-        let reportDb = await getClassReports({
-          classId,
-          month,
-          year,
-          date,
-        });
-        reportResponse.reports = reportDb;
-      }
+      let reportResponse = {};
 
+      let reportDb = await getClassReports({
+        classId,
+        month,
+        year,
+        date,
+      });
+      reportResponse.reports = reportDb;
       return res
         .status(200)
         .json(responseTemplate.successResponse(reportResponse));
@@ -158,6 +154,7 @@ export default class classReportController {
 
   static async getClassReportMonthlyApi(req, res, next) {
     try {
+      console.log("get data by month");
       const { classId } = req.query;
       if (!classId) {
         throw "classId is required";
@@ -182,35 +179,38 @@ export default class classReportController {
           },
         },
       ]);
-      return res
-        .status(200)
-        .json(responseTemplate.successResponse(reports));
+      return res.status(200).json(responseTemplate.successResponse(reports));
     } catch (e) {
-       return res.json(responseTemplate.handlingErrorResponse(error));
+      return res.json(responseTemplate.handlingErrorResponse(error));
     }
   }
 
-  static async getClassDated(req, res, next){
-    try{
-      const classDate = await ClassReportSchema.find({},{Date:1});
-      const response = {
-      }
-      let months = []
-      let dates =[]
-      classDate.forEach(item => {
-        const date = item["Date"]
-        dates.push(date)
+  static async getClassDated(req, res, next) {
+    try {
+      const id = req.params.id;
+      console.log("class id: ", id);
+      const classDate = await ClassReportSchema.find(
+        {
+          ClassID: new ObjectId(id),
+        },
+        { Date: 1 }
+      );
+      const response = {};
+      let months = [];
+      let dates = [];
+      classDate.forEach((item) => {
+        const date = item["Date"];
+        dates.push(date);
         const month = date.getMonth() + 1; // Lấy tháng (trả về giá trị từ 0 đến 11, nên cần cộng thêm 1 để lấy tháng từ 1 đến 12)
         const year = date.getFullYear(); // Lấy năm
-        const monthString = `${month}-${year}`
-        if(!months.includes(monthString))
-          months.push(monthString)
-      })
-      
-      response.months = months
-      response.dates = dates
+        const monthString = `${month}-${year}`;
+        if (!months.includes(monthString)) months.push(monthString);
+      });
+
+      response.months = months;
+      response.dates = dates;
       return res.status(200).json(responseTemplate.successResponse(response));
-    }catch(e){
+    } catch (e) {
       return res.json(responseTemplate.handlingErrorResponse(e));
     }
   }
