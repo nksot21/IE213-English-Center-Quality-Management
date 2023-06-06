@@ -9,7 +9,7 @@ const getCenterLevel = async (date) => {
     const classReports = await ClassReportSchema.find({
       Date: date,
     });
-    console.log("class reports:", classReports);
+    //console.log("class reports:", classReports);
     let goodLevel = 0;
     let mediumLevel = 0;
     let badLevel = 0;
@@ -40,30 +40,30 @@ const getCenterLevel = async (date) => {
   }
 };
 
-async function createUpdateReport(date) {
+export async function createUpdateCenterReport(date) {
   try {
     if (!date) {
       throw "Date is needed to create report!";
     }
     //find the center report
     const newDate = new Date(date);
-    const reportDb = await TotalReportSchema.findOne({ newDate });
+    const reportDb = await TotalReportSchema.findOne({ Date: newDate });
     console.log("reportDb: ", reportDb);
 
     //recaculate centerNumberLevel
     const resultCaculate = await getCenterLevel(newDate);
 
     if (!reportDb) {
-      console.log("dont have report");
+      console.log("dont have center report");
       const newCenterReport = await TotalReportSchema.create(resultCaculate);
       return newCenterReport;
     } else {
-      console.log("have report");
+      console.log("have center report");
       const updatedReport = await reportDb.updateOne(resultCaculate);
       return updatedReport;
     }
   } catch (e) {
-    console.log("create report", e);
+    console.log("create center report error", e);
     return error.message;
   }
 }
@@ -90,7 +90,7 @@ async function getCenterReports({ month = null, date = null } = {}) {
   }
 }
 
-export default class classReportController {
+export default class centerReportController {
   static async getCenterReportDailyApi(req, res, next) {
     try {
       const { date, month } = req.query;
@@ -115,7 +115,7 @@ export default class classReportController {
     try {
       const { date } = req.body;
       console.log("date: ", date);
-      const result = await createUpdateReport(date);
+      const result = await createUpdateCenterReport(date);
       console.log("result:", result);
       res.status(200).json(responseTemplate.successResponse(result));
     } catch (e) {
