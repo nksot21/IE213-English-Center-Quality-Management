@@ -9,6 +9,10 @@ export default class TeacherController {
       const { Certificate } = req.query;
       const teachers = await fetchTeachersByCertificate(Certificate);
       // const teacher = await TeacherSchema.find().populate("class", "name");
+      // const classIdsByTeacherId = await getClassIdsByTeacherId();
+      // teachers.forEach((teacher) => {
+      //   teacher.classIds = classIdsByTeacherId[teacher._id] || [];
+      // });
       if (!teachers) {
         throw "error";
       }
@@ -110,7 +114,24 @@ export default class TeacherController {
     }
   }
 }
+//Lấy ClassID theo từng TeacherID
+async function getClassIdsByTeacherId() {
+  const classIdsByTeacherId = {};
 
+  const teachers = await TeacherSchema.find();
+  const classIds = await ClassSchema.find({}, "_id");
+
+  teachers.forEach((teacher) => {
+    const classIdsForTeacher = classIds.filter((classId) =>
+      classId.teachers.includes(teacher._id)
+    );
+    classIdsByTeacherId[teacher._id] = classIdsForTeacher.map(
+      (classId) => classId._id
+    );
+  });
+
+  return classIdsByTeacherId;
+}
 // Function to fetch teachers by Certificate
 async function fetchTeachersByCertificate(Certificate) {
   let query = {};
