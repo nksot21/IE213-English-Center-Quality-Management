@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 //get number information of a class
 const getClassLevel = async (reportData) => {
   const studentsReports = await StudentReports.find(reportData);
-  console.log("student report:", studentsReports);
+  //console.log("student report:", studentsReports);
   let goodLevel = 0;
   let mediumLevel = 0;
   let badLevel = 0;
@@ -73,7 +73,7 @@ async function getClassReports({
 }
 
 //call in backend
-async function createUpdateReport(classId, date) {
+export async function createUpdateClassReport(classId, date) {
   try {
     if (!date || !classId) {
       throw "Date and ClassId are needed to create report!";
@@ -84,13 +84,16 @@ async function createUpdateReport(classId, date) {
       ClassID: classId,
       Date: new Date(date),
     };
+    console.log("reportData: ", reportData);
     const reportDb = await ClassReportSchema.findOne(reportData);
+
+    console.log("report check:", reportDb);
 
     //recaculate classNumberLevel
     const resultCaculate = await getClassLevel(reportData);
 
     if (!reportDb) {
-      console.log("dont have report");
+      console.log("dont have report")
       //create new report
       let month = reportData.Date.getMonth() + 1;
       let year = reportData.Date.getFullYear();
@@ -112,6 +115,9 @@ async function createUpdateReport(classId, date) {
     return error.message;
   }
 }
+
+
+
 export default class classReportController {
   static async getClassReportDailyApi(req, res, next) {
     try {
@@ -142,7 +148,7 @@ export default class classReportController {
   static async createUpdateReportApi(req, res, next) {
     try {
       const { date, classId } = req.body;
-      const result = await createUpdateReport(classId, date);
+      const result = await createUpdateClassReport(classId, date);
       console.log("result:", result);
       res.status(200).json(responseTemplate.successResponse(result));
     } catch (e) {

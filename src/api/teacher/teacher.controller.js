@@ -95,6 +95,24 @@ export default class TeacherController {
       return res.json(Response.handlingErrorResponse(error));
     }
   }
+  //find class for search
+  static async findTeachers(req, res, next) {
+    try {
+      const query = req.query.query;
+  
+      const teachers = await TeacherSchema.find({
+        $or: [
+          { Name: { $regex: query, $options: "i" } },
+          { TeacherID: { $regex: query, $options: "i" } }
+        ]
+      });
+  
+      return res.status(200).json(Response.successResponse(teachers));
+    } 
+    catch (error) {
+      return res.json(Response.handlingErrorResponse(error));
+    }
+  }
 }
 //Lấy ClassID theo từng TeacherID
 async function getClassIdsByTeacherId() {
