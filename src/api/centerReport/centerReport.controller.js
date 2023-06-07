@@ -14,6 +14,8 @@ const getCenterLevel = async (date) => {
     let mediumLevel = 0;
     let badLevel = 0;
     let totalStudent = 0;
+    let totalClass = 0;
+
     let sumCenterScore = 0;
 
     classReports.forEach((report) => {
@@ -22,8 +24,9 @@ const getCenterLevel = async (date) => {
       badLevel += report.BadLevel;
       totalStudent += report.TotalStudent;
       sumCenterScore += report.ClassScore;
+      totalClass++;
     });
-    let centerScore = sumCenterScore/totalStudent
+    let centerScore = sumCenterScore / totalClass;
     const result = {
       Date: date,
       GoodLevel: goodLevel,

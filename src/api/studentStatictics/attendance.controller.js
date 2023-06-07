@@ -43,18 +43,8 @@ export const createAttendance = async (req, res, next) => {
       //     })
       //     attendancesRes.push(updatedAttendace)
       // }
-      let tempId = student.id;
-      let report = await studentReportController.createStudentReport({
-        date: Date,
-        attendance: Attendance,
-        studentId: tempId,
-      });
+     
       attendancesRes.push(report);
-
-      //create or update class report
-      await createUpdateClassReport(student.ClassID, Date);
-      //create and update center report
-      await createUpdateCenterReport(Date);
     }
 
   return res.json(Response.successResponse(attendancesRes));
@@ -96,17 +86,17 @@ export const createAttendanceByScanning = async (req, res, next) => {
   );
 
   //create update student report
-  await Promise.all(
-    absentStudents.map(async (student) => {
-      let tempId = student.id;
-      let report = await studentReportController.createStudentReport({
-        date,
-        attendance: false,
-        studentId: tempId,
-      });
-      attendancesRes.push(report);
-    })
-  );
+  // await Promise.all(
+  //   absentStudents.map(async (student) => {
+  //     let tempId = student.id;
+  //     let report = await studentReportController.createStudentReport({
+  //       date,
+  //       attendance: false,
+  //       studentId: tempId,
+  //     });
+  //     attendancesRes.push(report);
+  //   })
+  // );
 
   return res.json(Response.successResponse(attendancesRes));
 };
