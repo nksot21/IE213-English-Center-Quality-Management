@@ -248,8 +248,8 @@ export default class studentReportController {
     homeworkScore = -1,
     testScore = -1,
     studentId = null,
-    testScoreRequired = 100,
-    homeworkScoreRequired = 100,
+    testScoreRequired = 0,
+    homeworkScoreRequired = 0,
   } = {}) {
     try {
       if (!date || !studentId) {
