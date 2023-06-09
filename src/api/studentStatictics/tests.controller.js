@@ -40,6 +40,7 @@ export const createTest = async (req, res, next) => {
           date: Date,
           testScore: Score,
           studentId: studentIdTemp,
+          testScoreRequired: 100
         });
         testsRes.push(newTest);
       } else {
@@ -51,6 +52,7 @@ export const createTest = async (req, res, next) => {
           date: Date,
           testScore: Score,
           studentId: studentIdTemp,
+          testScoreRequired: 100
         });
         testsRes.push(updatedTest);
       }

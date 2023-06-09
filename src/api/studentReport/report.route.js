@@ -9,6 +9,7 @@ route.route("/total").get(studentReportController.getStudentTotalReportAPI);
 route
   .route("/monthly/:studentid")
   .get(studentReportController.getStudentMonthlyReportAPI);
+// Get for PieChart
 route.route("/monthly").get(studentReportController.getMonthlyReportAPI);
 
 route.route("/date/:studentid").get(studentReportController.getStudiedDateAPI);

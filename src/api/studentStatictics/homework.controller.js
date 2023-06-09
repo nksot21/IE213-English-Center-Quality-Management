@@ -40,6 +40,7 @@ export const createHomework = async (req, res, next) => {
           date: Date,
           homeworkScore: Score,
           studentId: studentIdTemp,
+          homeworkScoreRequired: 100
         });
         homeworksRes.push(newHomework);
       } else {
@@ -54,6 +55,7 @@ export const createHomework = async (req, res, next) => {
           date: Date,
           homeworkScore: Score,
           studentId: studentIdTemp,
+          homeworkScoreRequired: 100
         });
         homeworksRes.push(updatedHomework);
       }

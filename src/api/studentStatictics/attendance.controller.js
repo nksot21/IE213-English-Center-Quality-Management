@@ -21,6 +21,19 @@ export const createAttendance = async (req, res, next) => {
             `Student with ID ${StudentID.StudentID} is not found`
           )
         );
+      
+        let tempId = student.id;
+        let report = await studentReportController.createStudentReport({
+          date: Date,
+          attendance: Attendance,
+          studentId: tempId,
+        });
+        attendancesRes.push(report);
+  
+        //create or update class report
+        await createUpdateClassReport(student.ClassID, Date);
+        //create and update center report
+        await createUpdateCenterReport(Date);
 
       // const attendanceData = {
       //     StudentID: student.id,
