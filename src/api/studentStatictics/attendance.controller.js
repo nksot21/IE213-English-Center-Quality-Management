@@ -137,8 +137,6 @@ export const deleteAttendance = async (req, res, next) => {
   const { classId } = req.params;
   const { date } = req.body;
 
-  console.log(req.body);
-
   const _class = await ClassSchema.findOne({
     ClassID: classId,
   });

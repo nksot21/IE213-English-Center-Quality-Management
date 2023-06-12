@@ -56,15 +56,12 @@ async function getClassReports({
 
       let month = newDate.getMonth() + 1;
       let year = newDate.getFullYear();
-      console.log("get4");
-
-      console.log("date: ", month, year);
       // nextDay.setDate(date.getDate() + 1);
 
       queries.Month = month;
       queries.Year = year;
     }
-    console.log("queries:", queries);
+    // console.log("queries:", queries);
     const reportsDb = await ClassReportSchema.find(queries);
     return reportsDb;
   } catch (e) {
@@ -85,16 +82,12 @@ export async function createUpdateClassReport(classId, date) {
       ClassID: classId,
       Date: new Date(date),
     };
-    console.log("reportData: ", reportData);
     const reportDb = await ClassReportSchema.findOne(reportData);
-
-    console.log("report check:", reportDb);
 
     //recaculate classNumberLevel
     const resultCaculate = await getClassLevel(reportData);
 
     if (!reportDb) {
-      console.log("dont have report");
       //create new report
       let month = reportData.Date.getMonth() + 1;
       let year = reportData.Date.getFullYear();
@@ -106,7 +99,6 @@ export async function createUpdateClassReport(classId, date) {
       });
       return newClassReport;
     } else {
-      console.log("have report");
       //update report
       const updatedReport = await reportDb.updateOne(resultCaculate);
       return updatedReport;
@@ -120,9 +112,7 @@ export async function createUpdateClassReport(classId, date) {
 export default class classReportController {
   static async getClassReportDailyApi(req, res, next) {
     try {
-      console.log("get data by date");
       const { classId, month, year, date } = req.query;
-      console.log("here:", classId, month, year, date);
 
       let reportResponse = {};
 
@@ -145,7 +135,6 @@ export default class classReportController {
     try {
       const { date, classId } = req.body;
       const result = await createUpdateClassReport(classId, date);
-      console.log("result:", result);
       res.status(200).json(responseTemplate.successResponse(result));
     } catch (e) {
       return res.json(responseTemplate.handlingErrorResponse(e));
@@ -154,7 +143,6 @@ export default class classReportController {
 
   static async getClassReportMonthlyApi(req, res, next) {
     try {
-      console.log("get data by month");
       const { classId } = req.query;
       if (!classId) {
         throw "classId is required";
@@ -188,7 +176,7 @@ export default class classReportController {
   static async getClassDated(req, res, next) {
     try {
       const id = req.params.id;
-      console.log("class id: ", id);
+      // console.log("class id: ", id);
       const classDate = await ClassReportSchema.find(
         {
           ClassID: new ObjectId(id),

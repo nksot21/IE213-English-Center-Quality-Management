@@ -293,8 +293,7 @@ export default class studentReportController {
           TestScore: testScore === -1 ? reportDb.TestScore : testScore,
           TestScoreRequired:
             testScore === -1 ? reportDb.TestScoreRequired : testScoreRequired,
-          Attendance:
-            attendance === null ? reportDb.Attendance : attendance,
+          Attendance: attendance === null ? reportDb.Attendance : attendance,
         };
 
         let newTotalScore = getTotalScore({
@@ -469,7 +468,6 @@ export default class studentReportController {
   static async getStudentTotalReportAPI(req, res, next) {
     try {
       const { istop, classid } = req.query;
-      console.log(req.query);
       let query = {};
       //Filter by typeClass
       if (req.query.typeClass) {

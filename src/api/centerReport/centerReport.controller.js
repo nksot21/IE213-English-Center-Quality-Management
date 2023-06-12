@@ -51,17 +51,14 @@ export async function createUpdateCenterReport(date) {
     //find the center report
     const newDate = new Date(date);
     const reportDb = await TotalReportSchema.findOne({ Date: newDate });
-    console.log("reportDb: ", reportDb);
 
     //recaculate centerNumberLevel
     const resultCaculate = await getCenterLevel(newDate);
 
     if (!reportDb) {
-      console.log("dont have center report");
       const newCenterReport = await TotalReportSchema.create(resultCaculate);
       return newCenterReport;
     } else {
-      console.log("have center report");
       const updatedReport = await reportDb.updateOne(resultCaculate);
       return updatedReport;
     }
@@ -119,7 +116,6 @@ export default class centerReportController {
       const { date } = req.body;
       console.log("date: ", date);
       const result = await createUpdateCenterReport(date);
-      console.log("result:", result);
       res.status(200).json(responseTemplate.successResponse(result));
     } catch (e) {
       return res.json(responseTemplate.handlingErrorResponse(e));

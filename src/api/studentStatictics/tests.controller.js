@@ -9,7 +9,6 @@ import { createUpdateCenterReport } from "../centerReport/centerReport.controlle
 
 export const createTest = async (req, res, next) => {
     const testsReq = req.body.tests
-    console.log(testsReq)
     let testsRes = []
     for( let i = 0; i < testsReq.length; i++){
       const { Score, TestID, StudentID, Date } = testsReq[i];
